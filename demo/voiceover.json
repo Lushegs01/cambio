@@ -1,0 +1,101 @@
+{
+  "_comment": "Narration per scene. A line with \"cue\": n starts when that scene's nth caption appears; \"at\" is seconds into the scene. \"say\" overrides the text sent to the voice (pronunciation only).",
+  "card-intro": [
+    {
+      "at": 0.4,
+      "text": "Meet Cambio. Get paid in MUSD, and prove it on-chain.",
+      "say": "Meet Cambio. Get paid in M U S D, and prove it on chain."
+    }
+  ],
+  "card-problem": [
+    {
+      "at": 0.3,
+      "text": "Getting paid in crypto is still broken. Long addresses. Links anyone can edit. Screenshots as proof."
+    }
+  ],
+  "card-solution": [
+    {
+      "at": 0.2,
+      "text": "Cambio fixes all three."
+    }
+  ],
+  "landing": [
+    {
+      "at": 0.2,
+      "text": "It's a non-custodial payment app, built for Mezo's bitcoin-backed stablecoin."
+    }
+  ],
+  "username": [
+    {
+      "cue": 0,
+      "text": "First, connect a wallet and claim a username. Instead of a forty-two character address, people can simply pay you by name."
+    },
+    {
+      "at": 8.6,
+      "text": "Pick a name, and Cambio checks that it's available."
+    },
+    {
+      "cue": 1,
+      "text": "Your wallet signs the claim, and the server verifies that signature before saving the name."
+    }
+  ],
+  "request": [
+    {
+      "cue": 0,
+      "text": "Next, create a payment request, with an amount, a note, and an expiry."
+    },
+    {
+      "cue": 1,
+      "text": "Your wallet signs it, using EIP-712.",
+      "say": "Your wallet signs it, using E I P seven twelve."
+    },
+    {
+      "cue": 2,
+      "text": "Share it as a link or a QR code. Change any detail, and the signature breaks.",
+      "say": "Share it as a link, or a Q R code. Change any detail, and the signature breaks."
+    }
+  ],
+  "pay": [
+    {
+      "cue": 0,
+      "text": "The payer opens the link. Before any pay button appears, their browser checks that the request really was signed by the recipient."
+    },
+    {
+      "at": 9.0,
+      "text": "Then they connect their wallet, and review the payment."
+    },
+    {
+      "cue": 1,
+      "text": "Every detail is shown up front."
+    },
+    {
+      "cue": 2,
+      "text": "Cambio then runs a live check against Mezo Testnet: the payer's balance, and the fee for this exact transaction. The request ID travels inside the transaction, so payment can be proven on-chain.",
+      "say": "Cambio then runs a live check against Mezo testnet: the payer's balance, and the fee for this exact transaction. The request I D travels inside the transaction, so payment can be proven on chain."
+    }
+  ],
+  "tamper": [
+    {
+      "cue": 0,
+      "text": "If anyone edits the link, say, to ten times the amount, the signature check fails, and Cambio refuses to offer payment."
+    }
+  ],
+  "swap": [
+    {
+      "cue": 0,
+      "text": "Balances are read straight from the chain."
+    },
+    {
+      "cue": 1,
+      "text": "And swaps go through Mezo's official router, with live quotes and on-chain pool fees.",
+      "say": "And swaps go through Mezo's official router, with live quotes, and on chain pool fees."
+    }
+  ],
+  "card-outro": [
+    {
+      "at": 0.4,
+      "text": "Cambio. Verified names, signed requests, on-chain proof. Try it now on Mezo Testnet.",
+      "say": "Cambio. Verified names. Signed requests. On chain proof. Try it now, on Mezo testnet."
+    }
+  ]
+}

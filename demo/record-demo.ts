@@ -106,7 +106,12 @@ async function type(page: Page, target: Locator, text: string) {
   await page.keyboard.type(text, { delay: 85 });
 }
 
+/** Wall-clock times (seconds since the scene's page opened) at which each caption appeared; the voiceover is cued to them. */
+let sceneT0 = 0;
+let sceneCues: number[] = [];
+
 async function caption(page: Page, step: string, title: string, sub = '') {
+  if (title) sceneCues.push((Date.now() - sceneT0) / 1000);
   await page.evaluate(([s, t, u]) => (window as any).__demoCaption?.(s, t, u), [step, title, sub]);
 }
 
@@ -120,7 +125,7 @@ async function dismissUsername(page: Page) {
   try { await later.waitFor({ state: 'visible', timeout: 6_000 }); await click(page, later, 400); } catch { /* not shown */ }
 }
 
-interface SceneInfo { name: string; file: string; start: number; end: number }
+interface SceneInfo { name: string; file: string; start: number; end: number; cues: number[] }
 const scenes: SceneInfo[] = [];
 
 /** Records one scene in its own context. `start`/`end` mark the useful span (seconds into the raw video). */
@@ -138,6 +143,8 @@ async function scene(browser: Browser, name: string, run: (page: Page, mark: () 
   await ctx.route('**/__card*', (route) => route.fulfill({ contentType: 'text/html', body: CARDS }));
   const page = await ctx.newPage();
   const t0 = Date.now();
+  sceneT0 = t0;
+  sceneCues = [];
   let start = 0;
   try {
     await run(page, () => { start = (Date.now() - t0) / 1000; });
@@ -151,7 +158,7 @@ async function scene(browser: Browser, name: string, run: (page: Page, mark: () 
   const file = path.join(OUT, `scene-${String(scenes.length).padStart(2, '0')}-${name}.webm`);
   await video.saveAs(file);
   await video.delete();
-  scenes.push({ name, file, start, end });
+  scenes.push({ name, file, start, end, cues: sceneCues.map((c) => c - start) });
   console.log(`recorded ${name}: ${start.toFixed(1)}s → ${end.toFixed(1)}s`);
 }
 
