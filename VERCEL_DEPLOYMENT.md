@@ -20,8 +20,12 @@ lint, production build with mainnet disabled, and all 169 tests in 18 files pass
 The original missing-module build failure was reproduced before restoration.
 Dependency audit still reports 16 affected entries (11 high, 5 moderate); this
 source-packaging repair does not resolve those previously documented advisories.
-No blockchain transaction was broadcast. Firestore rules and browser suites were
-not rerun for the initial repair commit; their earlier results are historical.
+No blockchain transaction was broadcast. The production browser suite was then
+rerun in this clone: `CI=true E2E_PORT=4175 VITE_ENABLE_MAINNET=false npm run
+test:e2e -- --workers=1` passed all 18 tests, including mobile. It uses a disposable
+in-memory registry explicitly allowed only in the test subprocess; it does not
+verify deployed Firestore. Firestore rules tests were not rerun for this
+packaging-only repair; their earlier results are historical.
 
 Repair commit `2b231ed841ace80ab1ed4fd74e3d353ed46b7fbe` was pushed successfully,
 but Vercel reported `Deployment was blocked` before building. GitHub attributed
@@ -30,7 +34,10 @@ and this repository's initial commit belong to `Lushegs01`. Corrected only this
 checkout's Git identity to the same public noreply address as that initial commit
 and pushed a follow-up without rewriting history. See Vercel's
 [commit author troubleshooting](https://vercel.com/docs/deployments/troubleshoot-project-collaboration).
-That correction still requires a fresh observed deployment result.
+GitHub confirms follow-up `22c998c55d2b045067dfd789360d988660b1c1fe` belongs to
+`Lushegs01`; Vercel accepted it and reported `Vercel is deploying your app` at
+[deployment BCR7inC2QfW8E1zdc8m6CWDahhq5](https://vercel.com/worldwide1/cambio/BCR7inC2QfW8E1zdc8m6CWDahhq5).
+Pending deployment is not proof of production readiness.
 
 The new project's failed Vercel deployment is under `worldwide1`, separate from
 the earlier origin/team described below. At repair time, integration access to
