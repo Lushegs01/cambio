@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Cambio Firestore security rules.
+//
+// Trust model:
+//  - Every write to identity data is made by the Cambio API with the Admin SDK, after it has verified
+//    an EIP-4361 wallet signature. The Admin SDK bypasses these rules; browser clients never write.
+//  - The only data a browser may read directly is a single verified username record, looked up by
+//    exact id. Listing/enumeration is denied.
+//  - Transaction history is derived from the blockchain, not stored here, so there is no per-wallet
+//    history collection to protect. Legacy client-written collections are closed entirely.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default: deny everything not explicitly allowed below.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Verified registry: username -> wallet. Public single-document reads for recipient resolution.
+    match /verified_usernames/{username} {
+      allow get: if username.matches('^[a-z0-9_]{3,20}$');
+      allow list, create, update, delete: if false;
+    }
+
+    // Verified reverse lookup: lowercase wallet address -> username.
+    match /verified_wallets/{address} {
+      allow get: if address.matches('^0x[a-f0-9]{40}$');
+      allow list, create, update, delete: if false;
+    }
+
+    // Single-use sign-in challenges. Server only: never readable, since a challenge's nonce must stay unguessable.
+    match /identity_challenges/{nonce} {
+      allow read, write: if false;
+    }
+
+    // Legacy collections from the prototype. Their ownership was never verified, so they are
+    // neither readable nor writable: `usernames`, `wallets`, `wallet_transactions`, `user_preferences`.
+    // (Covered by the default deny above; listed here for reviewers.)
+  }
+}

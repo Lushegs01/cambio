@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for Cambio's unique username system linked to connected wallets using Cloud Firestore, off-chain signature verification, onboarding dialogs, and integrations across Send, Receive, Request, and Settings.",
+  "updatedAt":  "2026-10-20T19:45:57.096797683Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

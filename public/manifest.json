@@ -1,0 +1,16 @@
+{
+  "short_name": "Cambio",
+  "name": "Cambio",
+  "description": "Non-custodial MUSD payments on Mezo with verified usernames and signed payment requests",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "480x520"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FAFAF8",
+  "theme_color": "#111111",
+  "display": "standalone"
+}

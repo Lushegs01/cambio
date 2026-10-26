@@ -1,0 +1,9 @@
+{
+    email {$ACME_EMAIL}
+    admin off
+}
+
+{$CAMBIO_HOSTNAME} {
+    encode zstd gzip
+    reverse_proxy app:3000
+}

@@ -1,0 +1,108 @@
+{
+  "mode": "default production without credentials",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "expected": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/app/activity",
+      "status": 200,
+      "expected": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/app/request",
+      "status": 200,
+      "expected": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/pay?to=0x0000000000000000000000000000000000000b0b",
+      "status": 200,
+      "expected": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/manifest.json",
+      "status": 200,
+      "expected": 200,
+      "contentType": "application/json; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/theme-init.js",
+      "status": 200,
+      "expected": 200,
+      "contentType": "application/javascript; charset=UTF-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/assets/missing-chunk.js",
+      "status": 404,
+      "expected": 404,
+      "contentType": null,
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": null
+    },
+    {
+      "path": "/api/unknown",
+      "status": 404,
+      "expected": 404,
+      "contentType": "application/json; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": {
+        "error": "not_found"
+      }
+    },
+    {
+      "path": "/api/health",
+      "status": 503,
+      "expected": 503,
+      "contentType": "application/json; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": {
+        "ok": false,
+        "identity": {
+          "available": false,
+          "durable": false,
+          "store": null,
+          "error": "Firestore identity store could not be initialised."
+        }
+      }
+    },
+    {
+      "path": "/api/identity/username/alice",
+      "status": 503,
+      "expected": 503,
+      "contentType": "application/json; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; connect-src 'self' https://rpc.test.mezo.org https://api.explorer.test.mezo.org https://api.coingecko.com https://api.coinbase.com https://open.er-api.com https://api.frankfurter.app https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com https://*.reown.org wss://*.reown.com wss://*.reown.org https://*.web3modal.org https://*.web3modal.com https://*.walletguide.walletconnect.network; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com; object-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "frameOptions": "DENY",
+      "body": {
+        "error": "identity_unavailable",
+        "message": "The username registry is unavailable. Usernames cannot be changed right now."
+      }
+    }
+  ]
+}

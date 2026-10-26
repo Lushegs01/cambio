@@ -1,0 +1,20 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+# Build output and test artefacts
+server.js
+test-results/
+playwright-report/
+.vercel/
+data/
+backups/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+firestore-debug.log
+*-debug.log

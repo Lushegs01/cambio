@@ -1,0 +1,50 @@
+name: cambio
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_WALLETCONNECT_PROJECT_ID: ${VITE_WALLETCONNECT_PROJECT_ID:?Set your Reown project ID}
+    init: true
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      APP_URL: https://${CAMBIO_HOSTNAME:?Set your public hostname}
+      TRUST_PROXY: "1"
+      IDENTITY_STORE: sqlite
+      IDENTITY_DATABASE_PATH: /data/identity.sqlite
+      ALLOW_NON_DURABLE_IDENTITY: "false"
+    volumes:
+      - registry_data:/data
+    ports:
+      - "127.0.0.1:3000:3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 15s
+  proxy:
+    image: caddy:2-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
+    restart: unless-stopped
+    environment:
+      CAMBIO_HOSTNAME: ${CAMBIO_HOSTNAME:?Set your public hostname}
+      ACME_EMAIL: ${ACME_EMAIL:?Set your TLS contact email}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+volumes:
+  registry_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,41 @@
+{
+  "checkedAtUtc": "2026-10-26T11:34:39.964Z",
+  "origin": "http://localhost:3100",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": true
+    },
+    {
+      "path": "/api/health",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "csp": true,
+      "body": {
+        "ok": true,
+        "identity": {
+          "available": true,
+          "kind": "sqlite",
+          "durable": true
+        }
+      }
+    },
+    {
+      "path": "/app/activity",
+      "status": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "csp": true
+    },
+    {
+      "path": "/api/missing",
+      "status": 404,
+      "contentType": "application/json; charset=utf-8",
+      "csp": true,
+      "body": {
+        "error": "not_found"
+      }
+    }
+  ]
+}

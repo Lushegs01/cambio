@@ -1,0 +1,8 @@
+{
+  "name": "Cambio",
+  "description": "Non-custodial MUSD payments on Mezo: send, request and receive MUSD with verified @usernames and signed payment links.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

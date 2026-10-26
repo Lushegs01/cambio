@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Username": {
+      "title": "Username",
+      "description": "Unique username alias registered on Cambio",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Normalized lowercase username without @ prefix",
+          "minLength": 3,
+          "maxLength": 20,
+          "pattern": "^[a-z0-9_]{3,20}$"
+        },
+        "ownerAddress": {
+          "type": "string",
+          "description": "EVM wallet address of the username owner",
+          "minLength": 42,
+          "maxLength": 42,
+          "pattern": "^0x[a-f0-9]{40}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the username was registered"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Cryptographic wallet signature verifying ownership",
+          "maxLength": 256
+        }
+      },
+      "required": ["username", "ownerAddress", "createdAt"]
+    },
+    "WalletUsername": {
+      "title": "WalletUsername",
+      "description": "Bidirectional mapping from wallet address to username alias",
+      "type": "object",
+      "properties": {
+        "walletAddress": {
+          "type": "string",
+          "description": "EVM wallet address",
+          "minLength": 42,
+          "maxLength": 42,
+          "pattern": "^0x[a-f0-9]{40}$"
+        },
+        "username": {
+          "type": "string",
+          "description": "Active canonical username alias",
+          "minLength": 3,
+          "maxLength": 20,
+          "pattern": "^[a-z0-9_]{3,20}$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this wallet mapping was updated"
+        }
+      },
+      "required": ["walletAddress", "username", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/usernames/{username}": {
+      "schema": "#/entities/Username",
+      "description": "Global unique username registry where doc ID is the canonical username"
+    },
+    "/wallets/{walletAddress}": {
+      "schema": "#/entities/WalletUsername",
+      "description": "Reverse lookup registry mapping wallet addresses to usernames"
+    }
+  }
+}

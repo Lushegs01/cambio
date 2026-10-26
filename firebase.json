@@ -1,0 +1,13 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-cambio-259bf3c8-6227-4d5b-b3e3-2b6bcc78ecc2",
+      "rules": "firestore.rules"
+    }
+  ],
+  "emulators": {
+    "firestore": { "host": "127.0.0.1", "port": 8085 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

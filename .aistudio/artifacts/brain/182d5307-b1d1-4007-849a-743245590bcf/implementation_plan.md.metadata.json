@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive implementation plan for the Preferred Currency feature in Cambio, including architecture, Open Exchange Rates API integration with 60s auto-refresh and manual refresh, Settings selection modal with search, cross-device Firestore sync with localStorage fallback, and unified fiat estimate displays across Overview, Send, Receive, Swap, and Activity.",
+  "updatedAt":  "2026-10-21T20:56:16.983303129Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

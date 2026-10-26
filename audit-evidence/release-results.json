@@ -1,0 +1,44 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:06:56.0195599Z",
+    "log": "../evidence/release-typecheck.log"
+  },
+  {
+    "command": "npm run lint",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:07:33.0046292Z",
+    "log": "../evidence/release-lint.log"
+  },
+  {
+    "command": "npm test",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:08:12.4745428Z",
+    "log": "../evidence/release-test.log"
+  },
+  {
+    "command": "npm run test:rules",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:08:33.3473819Z",
+    "log": "../evidence/release-test-rules.log"
+  },
+  {
+    "command": "npm run test:e2e",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:09:25.3614109Z",
+    "log": "../evidence/release-test-e2e.log"
+  },
+  {
+    "command": "npm run verify:chain",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:11:17.3179987Z",
+    "log": "../evidence/release-verify-chain.log"
+  },
+  {
+    "command": "npm run build",
+    "exit": 0,
+    "startedUtc": "2026-10-25T18:11:32.5291172Z",
+    "log": "../evidence/release-build.log"
+  }
+]
