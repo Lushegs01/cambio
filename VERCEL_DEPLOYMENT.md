@@ -21,7 +21,16 @@ The original missing-module build failure was reproduced before restoration.
 Dependency audit still reports 16 affected entries (11 high, 5 moderate); this
 source-packaging repair does not resolve those previously documented advisories.
 No blockchain transaction was broadcast. Firestore rules and browser suites were
-not rerun for this packaging-only repair; their earlier results are historical.
+not rerun for the initial repair commit; their earlier results are historical.
+
+Repair commit `2b231ed841ace80ab1ed4fd74e3d353ed46b7fbe` was pushed successfully,
+but Vercel reported `Deployment was blocked` before building. GitHub attributed
+its pre-existing local Git email to `Lushegs`, while the authenticated account
+and this repository's initial commit belong to `Lushegs01`. Corrected only this
+checkout's Git identity to the same public noreply address as that initial commit
+and pushed a follow-up without rewriting history. See Vercel's
+[commit author troubleshooting](https://vercel.com/docs/deployments/troubleshoot-project-collaboration).
+That correction still requires a fresh observed deployment result.
 
 The new project's failed Vercel deployment is under `worldwide1`, separate from
 the earlier origin/team described below. At repair time, integration access to
