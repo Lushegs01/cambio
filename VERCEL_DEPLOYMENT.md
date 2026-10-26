@@ -1,5 +1,18 @@
 # Cambio on Vercel
 
+## Current production result — 2026-10-26
+
+After the operator corrected runtime configuration and redeployed, the current
+origin https://cambio-five.vercel.app passed read-only checks: `/` and
+`/app/activity` returned HTTP 200, `/api/health` returned HTTP 200 with
+`available=true`, `kind=firestore`, `durable=true`, username availability returned
+HTTP 200, and `/api/missing` returned HTTP 404 JSON. CSP was present. Fresh
+Chromium visits to the homepage and activity route produced no page/console
+errors or failed requests. No production usernames were claimed or transactions
+broadcast by these checks. See `audit-evidence/submission-live-2026-10-26.json`
+and the current gate review in `SUBMISSION_READINESS.md`. The earlier failures
+below are retained as history; they no longer describe current API availability.
+
 ## API initialization diagnostics — 2026-10-26
 
 The new repository's homepage metadata and the user identify the current origin

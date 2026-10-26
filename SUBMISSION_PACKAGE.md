@@ -26,17 +26,17 @@ The interactive [AKINDO event page](https://app.akindo.io/wave-hacks/OVOO0gdrVU8
 
 **Project status:** Existing Cambio repository with release hardening and regression coverage added during this review. The team must supply its actual development dates and attribution. Do not describe this work as a fresh project without checking that history.
 
-**Readiness:** Local production build and automated testnet reads verified. Public deployment, durable deployed identity and an actual wallet-approved testnet payment/proof are still blocked. Change this field only after completing those gates.
+**Readiness:** Public deployment and durable Firestore availability are verified as of 2026-10-26. Local typecheck, lint, build and 173 unit/integration/UI tests pass; the earlier production browser suite passed 18 tests and emulator suite 14. Actual wallet-approved testnet payment/proof evidence, a public matching source repository and the final video/materials remain incomplete. This is not a mainnet release or independent audit.
 
-**Source:** https://github.com/CaNoN-0/Cambio. The user authorized publication of the reviewed fixes after the audit. Pin the commit containing this document as the submission source, and complete the deployment and live-payment gates in SUBMISSION_READINESS.md before submitting.
+**Source:** The current deployment uses https://github.com/Lushegs01/cambio at `c690ae489f262f3cae62712d4b01f541bbd374e6`, currently **private**. The earlier https://github.com/CaNoN-0/Cambio is public. Before submitting, provide public source matching the deployed code by publishing the current repository or updating an authorized public mirror. Do not claim that the current private repository satisfies the public-source requirement.
 
-**Live application:** NOT PROVIDED. The repository has no configured homepage or public deployment record. The team must supply its actual deployment URL after checking health.
+**Live application:** https://cambio-five.vercel.app. Homepage and direct routes return 200; `/api/health` reports HTTP 200 with available, durable Firestore identity. Read-only evidence is in `audit-evidence/submission-live-2026-10-26.json`.
 
-**Deck:** `submission/Cambio-pitch-deck.pdf`, a six-slide product deck with explicit verification limits.
+**Deck:** `submission/Cambio-pitch-deck.pdf`, a six-slide draft with explicit verification limits. Review/update its earlier deployment and status statements before upload; this readiness check did not regenerate the PDF.
 
 **Video:** NOT RECORDED. Use the script below after the deployment and real testnet transaction exist. Do not replace missing explorer evidence with a simulated hash.
 
-**Proposed milestones for team approval:** Before submission, finish public deployment and the funded two-wallet proof. During the following development wave, validate mobile wallets and a small merchant pilot if the team chooses to pursue one. Before any mainnet release, resolve/review dependency risks, improve recovery/index coverage and obtain an independent security review. These are proposals, not commitments already made by the user.
+**Proposed milestones for team approval:** Before submission, complete the two-wallet testnet proof, public matching source and demo materials. During the following development wave, validate mobile wallets and a small merchant pilot if the team chooses to pursue one. Before any mainnet release, resolve/review dependency risks, improve recovery/index coverage and obtain an independent security review. These are proposals, not commitments already made by the user.
 
 **Team:** The operator must enter actual names, roles and profile links. None were invented.
 
@@ -58,6 +58,6 @@ Only say the previous two sentences after recording a genuine broadcast and matc
 
 Only show a paid proof after it genuinely verifies. Otherwise explicitly state that proof demonstration is blocked.
 
-**1:45-2:00, status:** “The current review passed 143 unit, integration and UI tests, 14 Firestore emulator tests and 18 production browser tests. Mainnet remains disabled. The application has no independent audit, and remaining wallet-SDK dependency risks are documented.”
+**1:45-2:00, status:** “The latest local checks passed 173 unit, integration and UI tests; earlier runs passed 14 Firestore emulator tests and 18 production browser tests. The public app now reports healthy, durable Firestore storage. The application has no independent audit, and remaining wallet-SDK dependency risks are documented.”
 
 Before uploading, recheck the final test counts, include the real public app/source URLs and record the actual limits that still apply. The user must approve all factual team and milestone statements.

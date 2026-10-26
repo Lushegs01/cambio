@@ -1,5 +1,68 @@
 # Cambio submission readiness
 
+## Current gate review — 2026-10-26
+
+**Verdict: NOT READY for the complete submission package yet.** The production
+startup and durable Firestore availability blockers are now resolved. The
+remaining essential evidence is a real human-wallet testnet payment and its
+independently opened signed-request proof, publicly accessible matching source,
+and the actual demo video/final materials.
+
+Checked source: `c690ae489f262f3cae62712d4b01f541bbd374e6` in
+https://github.com/Lushegs01/cambio. Live application:
+https://cambio-five.vercel.app. GitHub reports the current Vercel deployment
+completed successfully. Read-only checks observed homepage and direct activity
+route HTTP 200, health HTTP 200 with `available=true`, `kind=firestore`,
+`durable=true`, username availability HTTP 200, and unknown API route HTTP 404
+JSON. CSP was present. A fresh Playwright Chromium context loaded both pages
+without page/console errors or failed requests. This browser check was
+disconnected: it does not establish a real payment or wallet pairing.
+
+Latest local implementation checks: typecheck, lint, build and all **173 tests in
+18 files** passed on the checked source. The previous production browser suite
+passed **18 tests** at `7d67263`; the earlier Firestore emulator suite passed
+**14 tests**, and read-only chain verification passed during the documented
+self-hosting audit. These suites were not rerun merely for this readiness
+assessment; their dates/scopes remain distinct. Current check commands:
+`git status --short`, `git log -1`, `gh api repos/Lushegs01/cambio`,
+`gh api repos/Lushegs01/cambio/commits/main/status`,
+`gh api repos/CaNoN-0/Cambio`, Node `fetch` of the five paths recorded above,
+and a Playwright Chromium smoke using `page.goto` on `/` and `/app/activity`.
+All completed successfully; the visibility query exposed the source gate below.
+Evidence: [submission-live-2026-10-26.json](audit-evidence/submission-live-2026-10-26.json).
+
+Current release gates:
+
+- [x] Public frontend and same-origin API are reachable with security headers.
+- [x] Actual deployed Firestore responds and reports durable storage.
+- [x] Latest documented local typecheck/lint/unit/build checks pass.
+- [x] Prior emulator, production-browser and read-only chain evidence exists.
+- [ ] A real Mezo Testnet wallet-approved MUSD payment and independently opened
+  signed-request proof are supplied and verified. No transaction was broadcast
+  by this review. General user-reported success does not replace this evidence.
+- [ ] Submitted source is public and matches the deployment. GitHub currently
+  reports `Lushegs01/cambio` **private**. The earlier `CaNoN-0/Cambio` repository
+  is public but was not synchronized with the current deployed revision here.
+  Repository visibility was not changed automatically.
+- [ ] Two-minute pitch/demo video and final deck, team and form details are
+  finalized. The existing PDF is an earlier draft and needs its deployment/status
+  statements reviewed before upload.
+- [ ] Remaining wallet-SDK dependency advisories are resolved or explicitly
+  accepted for a testnet-only submission with the documented risk assessment.
+
+Live availability does not inspect deployed rules/IAM or prove a deliberate
+restart/persistence exercise. The Vercel integration still lacks project access;
+those administrative checks, real mobile pairing and supported contract-wallet
+behavior remain unverified. Mainnet protection remains the code default and no
+mainnet-enabling change was made. This is not an independent smart-contract
+security audit or a mainnet release approval.
+
+The official Mezo announcement was rechecked and lists Wave 1 submissions due
+**October 26, 2026**; verify the exact cutoff/timezone and current form in AKINDO.
+No submission, registration, purchase or terms acceptance was performed.
+
+## Historical audit and earlier deployments
+
 **Verdict: NOT READY for submission.** All seven requested test/build scripts passed, but a working public deployment with durable identity and a real wallet-approved testnet payment/proof remain essential, uncompleted gates. During the audit, no deployment, push, contract deployment, production-data mutation, mainnet enablement or transaction broadcast was performed. After the audit, the user authorized committing and pushing the reviewed changes; that source publication does not complete the remaining release gates.
 
 **2026-10-26 deployment follow-up:** the user subsequently supplied https://cambio-rho.vercel.app and authorized backend deployment. Its frontend returned 200, but API and direct `/app/activity` routes returned Vercel 404 responses. This revision adds the Node API function, explicit API/SPA routing, CDN security headers, server-only Firebase credential support, and compiled-Node startup regression coverage. See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md). The connected Vercel account cannot access the owning team (403; authorization recovery returned team not found). Firebase runtime credentials/IAM therefore remain unverified; a healthy durable registry and live payment proof are still required. The original audit evidence below retains its original date and scope.

@@ -11,7 +11,7 @@ Cambio is for people and small businesses who want to get paid in MUSD (Mezo's b
 | "I paid you" is hard to verify | The payment transaction carries the request id in its calldata; anyone can check settlement on-chain from a proof link |
 | Wallet UIs hide what is happening | Every transfer shows network, token contract, recipient, RPC fee estimate and a receipt-based outcome |
 
-> **Release review (2026-10-25): NOT READY for submission until the blocked deployment and real testnet-payment gates in [SUBMISSION_READINESS.md](SUBMISSION_READINESS.md) are completed.** Local automated and read-only chain evidence is recorded there.
+> **Release review (2026-10-26):** [The live app](https://cambio-five.vercel.app) and its durable Firestore health check now pass. Final submission still requires real testnet payment/proof evidence, public matching source and the finished demo materials. See [SUBMISSION_READINESS.md](SUBMISSION_READINESS.md) for the current gates and historical test evidence.
 
 > **Status:** hackathon MVP on **Mezo Testnet**. Not audited. Do not use with significant real funds. See [Residual risks](#residual-risks).
 

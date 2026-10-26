@@ -1,0 +1,37 @@
+{
+  "checkedDate": "2026-10-26",
+  "timezone": "Africa/Lagos",
+  "sourceCommit": "c690ae489f262f3cae62712d4b01f541bbd374e6",
+  "origin": "https://cambio-five.vercel.app",
+  "deployment": {
+    "gitStatus": "success",
+    "description": "Deployment has completed",
+    "url": "https://vercel.com/worldwide1/cambio/Eu7CoqDbVza3UnkmydUfzesrwF1L"
+  },
+  "http": [
+    { "path": "/", "status": 200, "contentType": "text/html; charset=utf-8", "csp": true },
+    { "path": "/app/activity", "status": 200, "contentType": "text/html; charset=utf-8", "csp": true },
+    { "path": "/api/health", "status": 200, "csp": true, "body": { "ok": true, "identity": { "available": true, "kind": "firestore", "durable": true } } },
+    { "path": "/api/identity/availability?username=deployment_probe", "status": 200, "csp": true, "body": { "username": "deployment_probe", "available": true } },
+    { "path": "/api/missing", "status": 404, "csp": true, "body": { "error": "not_found" } }
+  ],
+  "browser": {
+    "tool": "Playwright Chromium, headless, fresh disconnected context",
+    "pages": [ { "path": "/", "status": 200, "title": "Cambio" }, { "path": "/app/activity", "status": 200, "title": "Cambio" } ],
+    "pageAndConsoleErrors": [],
+    "failedRequests": [],
+    "walletConnected": false
+  },
+  "sourceVisibility": {
+    "https://github.com/Lushegs01/cambio": "private",
+    "https://github.com/CaNoN-0/Cambio": "public, earlier source revision; not synchronized to current deployment in this check"
+  },
+  "notVerified": [
+    "Actual wallet-approved testnet payment and independently opened signed-request settlement proof",
+    "Cloud username ownership persistence across a deliberate restart",
+    "Deployed Firestore rules and IAM inspection",
+    "Production wallet/mobile WalletConnect pairing",
+    "Demo video recording and final submission upload"
+  ],
+  "safety": "Only read-only public HTTP, browser and GitHub metadata checks were performed; no username claimed, transaction broadcast, visibility changed or entry submitted."
+}
