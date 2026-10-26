@@ -61,8 +61,8 @@
       "text": "The payer opens the link. Before any pay button appears, their browser checks that the request really was signed by the recipient."
     },
     {
-      "at": 9.0,
-      "text": "Then they connect their wallet, and review the payment."
+      "at": 10.0,
+      "text": "Then they connect their wallet. Cambio never holds anyone's keys or funds: every transfer is signed in the payer's own wallet."
     },
     {
       "cue": 1,
