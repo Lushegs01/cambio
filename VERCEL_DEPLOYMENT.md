@@ -1,5 +1,36 @@
 # Cambio on Vercel
 
+## New repository build repair — 2026-10-26
+
+The deployment log for `Lushegs01/cambio` at `79b11e588c3312325bd203f615e04455df3dce31`
+failed with `Could not resolve './data/mockData' in src/App.tsx`. This new repository
+omitted `src/data/mockData.ts`: the unanchored `data/` ignore rule also matched
+application source. The file existed in the previously audited repository.
+
+Restored that exact fixture module, retaining its explicit simulated status and
+hashless demo records. Root-anchored `/data/` and `/backups/` now protect runtime
+storage without excluding source directories. `tests/source-packaging.test.ts`
+uses Git's `--no-index` ignore check so previously tracked files cannot hide this
+defect; it also verifies that registry files, backups and environment secrets
+remain ignored. The new regression failed before the ignore-rule fix.
+
+Observed local results in a separate clone of this new repository: lockfile install
+`npm ci --cache ..\npm-cache --prefer-online` passed (1,098 packages); typecheck,
+lint, production build with mainnet disabled, and all 169 tests in 18 files passed.
+The original missing-module build failure was reproduced before restoration.
+Dependency audit still reports 16 affected entries (11 high, 5 moderate); this
+source-packaging repair does not resolve those previously documented advisories.
+No blockchain transaction was broadcast. Firestore rules and browser suites were
+not rerun for this packaging-only repair; their earlier results are historical.
+
+The new project's failed Vercel deployment is under `worldwide1`, separate from
+the earlier origin/team described below. At repair time, integration access to
+this new team required authorization. A successful local build does not verify
+this project's deployed API or Firestore credentials. Set `APP_URL` and the Reown
+origin allowlist to this project's actual public origin, and require HTTP 200
+with available, durable Firestore identity from `/api/health` before claiming
+username service readiness.
+
 The existing public origin is https://cambio-rho.vercel.app. Its Git integration is associated with the `cambio` project under `jomilojujaiyesimi-7017s-projects`. Before this fix, the homepage returned 200 but `/api/health`, username availability and `/app/activity` returned Vercel 404 responses.
 
 ## Observed deployment — 2026-10-26

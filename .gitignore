@@ -11,8 +11,9 @@ server.js
 test-results/
 playwright-report/
 .vercel/
-data/
-backups/
+# Runtime storage lives at the repository root. Keep src/data source files tracked.
+/data/
+/backups/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
