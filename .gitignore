@@ -19,3 +19,4 @@ playwright-report/
 *.sqlite-shm
 firestore-debug.log
 *-debug.log
+demo/out/

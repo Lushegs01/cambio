@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cambio demo cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0C0C0D; --fg: #F5F5F7; --muted: #8A8A90; --btc: #F7931A; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg); font-family: Inter, system-ui, sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
+  .stage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .glow { position: absolute; width: 900px; height: 900px; border-radius: 50%; filter: blur(140px); opacity: 0; animation: glow 1.6s ease-out .1s forwards, drift 9s ease-in-out infinite alternate; }
+  .g1 { background: radial-gradient(circle, rgba(247,147,26,.55), transparent 65%); left: -200px; top: -250px; }
+  .g2 { background: radial-gradient(circle, rgba(120,110,255,.35), transparent 65%); right: -250px; bottom: -300px; animation-delay: .3s, 0s; }
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
+  @keyframes glow { to { opacity: 1; } }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(80px,40px) scale(1.12); } }
+  .up { opacity: 0; transform: translateY(28px); filter: blur(8px); animation: up .9s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes up { to { opacity: 1; transform: none; filter: none; } }
+  .logo { width: 150px; height: 150px; object-fit: contain; filter: invert(1) drop-shadow(0 0 36px rgba(247,147,26,.45)); animation-delay: .2s; }
+  .logo.up { animation-name: uplogo; }
+  @keyframes uplogo { from { opacity: 0; transform: translateY(28px); filter: invert(1) blur(8px) drop-shadow(0 0 0 rgba(247,147,26,0)); } to { opacity: 1; transform: none; filter: invert(1) blur(0) drop-shadow(0 0 36px rgba(247,147,26,.45)); } }
+  h1 { font-size: 120px; font-weight: 800; letter-spacing: -0.05em; margin-top: 34px; animation-delay: .45s; }
+  .tag { font-size: 40px; font-weight: 500; color: var(--muted); margin-top: 18px; letter-spacing: -0.02em; animation-delay: .8s; }
+  .tag b { color: var(--fg); font-weight: 600; }
+  .pill { margin-top: 44px; display: inline-flex; gap: 12px; align-items: center; padding: 14px 26px; border: 1px solid #2A2A30; border-radius: 999px; font-size: 22px; color: #C9C9CF; background: rgba(255,255,255,.03); animation-delay: 1.15s; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--btc); box-shadow: 0 0 14px var(--btc); }
+  .eyebrow { font-size: 24px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--btc); }
+  .rows { margin-top: 46px; display: flex; flex-direction: column; gap: 26px; align-items: flex-start; }
+  .row { font-size: 56px; font-weight: 700; letter-spacing: -0.035em; display: flex; gap: 26px; align-items: center; }
+  .x { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,80,80,.12); color: #FF6B6B; font-size: 30px; }
+  .ok { background: rgba(80,220,140,.13); color: #5BE39A; }
+  .row s { text-decoration-color: rgba(255,107,107,.0); transition: none; }
+  .strike { position: relative; }
+  .strike::after { content: ''; position: absolute; left: 0; top: 54%; height: 5px; width: 0; background: #FF6B6B; border-radius: 3px; animation: strike .5s ease-in forwards; }
+  @keyframes strike { to { width: 100%; } }
+  .big { font-size: 96px; font-weight: 800; letter-spacing: -0.05em; line-height: 1.02; }
+  .grad { background: linear-gradient(90deg, #FFFFFF, #F7931A 60%, #FFB65C); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .feat { margin-top: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .card { width: 380px; padding: 28px 30px; border-radius: 24px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid #26262B; text-align: left; }
+  .card h3 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+  .card p { font-size: 19px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  .url { margin-top: 50px; font-size: 34px; font-weight: 600; color: var(--fg); padding: 18px 34px; border-radius: 18px; background: #F5F5F7; color: #111; }
+  .fine { margin-top: 30px; font-size: 20px; color: #6A6A70; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="stage" id="stage"></div>
+<script>
+const card = new URLSearchParams(location.search).get('card') || 'intro';
+const stage = document.getElementById('stage');
+const d = (s) => `style="animation-delay:${s}s"`;
+const cards = {
+  intro: `
+    <img class="logo up" src="/logo.png" alt="">
+    <h1 class="up">Cambio</h1>
+    <p class="tag up">Get paid in <b>MUSD</b>. Prove it <b>on-chain</b>.</p>
+    <div class="pill up"><span class="dot"></span>Non-custodial payments on Mezo · Bitcoin-backed stablecoin</div>`,
+  problem: `
+    <p class="eyebrow up" ${d(.1)}>Getting paid in crypto is still broken</p>
+    <div class="rows">
+      <div class="row up" ${d(.4)}><span class="x">✕</span><span class="strike" style="--d:1.6s">Pasting 42-character addresses</span></div>
+      <div class="row up" ${d(.9)}><span class="x">✕</span><span class="strike">Payment links anyone can edit</span></div>
+      <div class="row up" ${d(1.4)}><span class="x">✕</span><span class="strike">“I paid you” screenshots as proof</span></div>
+    </div>`,
+  solution: `
+    <p class="eyebrow up" ${d(.1)}>Cambio fixes all three</p>
+    <p class="big up" ${d(.35)} style="margin-top:28px">Verified names. Signed requests.<br><span class="grad">On-chain proof.</span></p>`,
+  outro: `
+    <img class="logo up" src="/logo.png" alt="" style="width:104px;height:104px;border-radius:26px">
+    <p class="big up" ${d(.35)} style="margin-top:30px">Cambio</p>
+    <div class="feat">
+      <div class="card up" ${d(.7)}><h3>@username</h3><p>Bound to a wallet by a server-verified signature.</p></div>
+      <div class="card up" ${d(.85)}><h3>EIP-712 requests</h3><p>Amount and recipient can't be tampered with.</p></div>
+      <div class="card up" ${d(1.0)}><h3>Settlement proof</h3><p>Request id in calldata, checked against the receipt.</p></div>
+    </div>
+    <div class="url up" ${d(1.4)}>cambio-five.vercel.app</div>
+    <p class="fine up" ${d(1.7)}>Hackathon MVP on Mezo Testnet · Not audited</p>`,
+};
+stage.innerHTML = cards[card];
+// Strike-throughs start after each problem row has landed.
+document.querySelectorAll('.strike').forEach((el, i) => el.style.setProperty('animation-delay', '0s'));
+document.querySelectorAll('.row .strike').forEach((el, i) => {
+  el.style.setProperty('--i', i);
+  const sheet = document.styleSheets[0];
+  sheet.insertRule(`.row:nth-child(${i + 1}) .strike::after { animation-delay: ${2.2 + i * 0.35}s; }`, sheet.cssRules.length);
+});
+</script>
+</body>
+</html>
