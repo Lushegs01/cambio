@@ -111,6 +111,26 @@ describe('Vercel API entry point', () => {
     log.mockRestore();
   });
 
+  it.each([
+    { APP_URL: 'https://user:private-test-value@example.com/path', configuration: 'APP_URL' },
+    { APP_URL: 'private-test-value', configuration: 'APP_URL' },
+    { TRUST_PROXY: 'true', configuration: 'TRUST_PROXY' },
+    { TRUST_PROXY: 'private-test-value', configuration: 'TRUST_PROXY' },
+  ])('identifies invalid $configuration without exposing its value or contacting storage', async ({ configuration, ...env }) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const initialize = vi.fn(async () => ({ identity: identity() }));
+      const base = await serve(createServerlessHandler(env, initialize));
+      const response = await fetch(`${base}/api/health`);
+      expect(response.status).toBe(503);
+      const body = await response.json();
+      expect(body).toMatchObject({ error: 'api_unavailable', configuration });
+      expect(JSON.stringify(body)).not.toContain('private-test-value');
+      expect(log.mock.calls.flat().join(' ')).not.toContain('private-test-value');
+      expect(initialize).not.toHaveBeenCalled();
+    } finally { log.mockRestore(); }
+  });
+
   it('routes API requests before SPA links and keeps CDN security headers aligned with Express', () => {
     const config = JSON.parse(readFileSync('vercel.json', 'utf8'));
     expect(config.rewrites).toEqual([

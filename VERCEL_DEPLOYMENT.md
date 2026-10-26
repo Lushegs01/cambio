@@ -1,5 +1,28 @@
 # Cambio on Vercel
 
+## API initialization diagnostics — 2026-10-26
+
+The new repository's homepage metadata and the user identify the current origin
+as `https://cambio-five.vercel.app`. Read-only requests to `/api/health`, username
+availability and `/api/missing` all returned HTTP 503 with `api_unavailable` and
+`The API could not be initialized. Check server configuration.` This is a failure
+of the serverless initialization wrapper, distinct from the old origin's
+Firestore-specific initialization response. Project settings/logs remain
+inaccessible to the connected integration (403 for the `worldwide1` team).
+
+The wrapper now reports only the offending setting's name when `APP_URL` or
+`TRUST_PROXY` is invalid. Invalid public origins and Express proxy subnets are
+rejected before attempting storage initialization; values, credentials and
+arbitrary exception messages are never returned. Strict origin/proxy validation
+remains in force. Correct public configuration is `APP_URL=https://cambio-five.vercel.app`
+and `TRUST_PROXY=1`, entered as raw values without surrounding quotes in Vercel.
+This diagnostic does not configure Firestore or assert database readiness.
+
+Verification: typecheck and lint passed; all 173 tests in 18 files passed,
+including four added cases for invalid origins/proxies and non-disclosure;
+production build with mainnet disabled and `git diff --check` passed. Browser,
+rules and chain suites were not rerun for this wrapper diagnostic change.
+
 ## New repository build repair — 2026-10-26
 
 The deployment log for `Lushegs01/cambio` at `79b11e588c3312325bd203f615e04455df3dce31`
