@@ -119,6 +119,7 @@ FIRESTORE_EMULATOR_HOST=127.0.0.1:8085 FIREBASE_PROJECT_ID=demo-cambio npm run d
 ### Wallet and test funds
 
 1. Use any EVM wallet (MetaMask, Rabby, a WalletConnect mobile wallet). Cambio offers to add/switch to **Mezo Testnet** (chain 31611) for you.
+   On a phone, Chrome or Safari has to hand off to the wallet app over WalletConnect, and iOS can block that hand-off. If MetaMask does not open from Connect Wallet, tap **Open in MetaMask app** (shown under Connect Wallet in phone browsers): it opens the same Cambio page, payment links included, inside MetaMask's browser.
 2. Get test BTC from https://faucet.test.mezo.org (BTC pays gas on Mezo).
 3. Get test MUSD by swapping in Cambio (Swap → BTC → MUSD; 0.001 test BTC quoted ≈ 78 MUSD on 2026-10-23).
 

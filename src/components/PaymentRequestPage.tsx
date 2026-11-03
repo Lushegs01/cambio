@@ -15,6 +15,7 @@ import type { TxPhase } from '../lib/transactions';
 import { ThemeToggle } from './ThemeToggle';
 import { HalftonePattern } from './HalftonePattern';
 import { SendModal } from './SendModal';
+import { OpenInMetaMask } from './OpenInMetaMask';
 import logoImage from '@/logo.png';
 
 interface PaymentRequestPageProps {
@@ -254,9 +255,12 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
         ) : !chain ? (
           <p className="p-3.5 rounded-2xl bg-red-500/10 text-red-600 text-xs text-center">This request is for a network Cambio does not support.</p>
         ) : !wallet.isConnected ? (
-          <button type="button" onClick={onConnectWallet} className="w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-sm font-semibold">
-            <Wallet className="w-4 h-4" /> Connect wallet to pay
-          </button>
+          <div className="space-y-3">
+            <button type="button" onClick={onConnectWallet} className="w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-sm font-semibold">
+              <Wallet className="w-4 h-4" /> Connect wallet to pay
+            </button>
+            <OpenInMetaMask />
+          </div>
         ) : wrongChain ? (
           <div className="space-y-2">
             <button type="button" onClick={handleSwitch} className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-amber-600 text-white text-sm font-semibold">

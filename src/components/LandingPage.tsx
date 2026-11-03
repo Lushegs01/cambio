@@ -3,6 +3,7 @@ import { WalletState } from '../types';
 import { shortenAddress } from '../utils/format';
 import { ThemeToggle } from './ThemeToggle';
 import { ParticleAmoeba } from './ParticleAmoeba';
+import { OpenInMetaMask } from './OpenInMetaMask';
 import mockupImage from '@/mockup.png';
 import logoImage from '@/logo.png';
 
@@ -131,6 +132,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
+
+            {!wallet.isConnected && <OpenInMetaMask className="sm:max-w-sm animate-fade-in-up animation-delay-300" />}
           </div>
 
           {/* Right Column: Mockup Image */}
