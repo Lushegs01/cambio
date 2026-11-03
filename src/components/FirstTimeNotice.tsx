@@ -2,6 +2,7 @@ import React from 'react';
 import { Wallet, ArrowRight, Loader2 } from 'lucide-react';
 import { WalletConnectionStatus } from '../types';
 import { HalftonePattern } from './HalftonePattern';
+import { OpenInMetaMask } from './OpenInMetaMask';
 
 interface FirstTimeNoticeProps {
   onConnectWallet: () => void;
@@ -38,23 +39,26 @@ export const FirstTimeNotice: React.FC<FirstTimeNoticeProps> = ({ onConnectWalle
           </div>
         </div>
 
-        <button
-          onClick={onConnectWallet}
-          disabled={isConnecting}
-          className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#111111] dark:bg-[#FFFFFF] hover:bg-[#262626] dark:hover:bg-white/90 text-sm font-semibold text-white dark:text-[#111111] transition-all duration-200 shrink-0 shadow-xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer font-sans"
-        >
-          {isConnecting ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-white dark:text-[#111111]" />
-              <span className="font-sans text-xs font-semibold uppercase tracking-wider">Connecting...</span>
-            </>
-          ) : (
-            <>
-              <span className="font-sans text-xs uppercase tracking-wider font-semibold">Connect Wallet</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
-            </>
-          )}
-        </button>
+        <div className="flex flex-col items-stretch gap-2.5 shrink-0">
+          <button
+            onClick={onConnectWallet}
+            disabled={isConnecting}
+            className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#111111] dark:bg-[#FFFFFF] hover:bg-[#262626] dark:hover:bg-white/90 text-sm font-semibold text-white dark:text-[#111111] transition-all duration-200 shrink-0 shadow-xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer font-sans"
+          >
+            {isConnecting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-white dark:text-[#111111]" />
+                <span className="font-sans text-xs font-semibold uppercase tracking-wider">Connecting...</span>
+              </>
+            ) : (
+              <>
+                <span className="font-sans text-xs uppercase tracking-wider font-semibold">Connect Wallet</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+              </>
+            )}
+          </button>
+          <OpenInMetaMask />
+        </div>
       </div>
     </div>
   );
