@@ -16,7 +16,8 @@
     "test:rules": "firebase emulators:exec --only firestore --project demo-cambio \"vitest run -c vitest.rules.config.ts\"",
     "verify:chain": "tsx scripts/verify-contracts.ts",
     "test:e2e": "playwright test",
-    "verify:evidence": "tsx scripts/verify-evidence.ts"
+    "verify:evidence": "tsx scripts/verify-evidence.ts",
+    "test:live": "vitest run -c vitest.live.config.ts"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.24",

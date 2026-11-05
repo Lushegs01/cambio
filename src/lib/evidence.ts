@@ -220,7 +220,7 @@ export function checkSignedSettlement(
 ): EvidenceResult {
   const transfer = checkMusdTransfer(chain, hash, tx, receipt, blockTimestampMs, { to: request.recipient, amount: request.amount });
   const checks = [...transfer.checks];
-  const facts = { ...transfer.facts, signedRequestId: request.id, requestCreatedAt: new Date(request.createdAt * 1000).toISOString(), requestExpiresAt: new Date(request.expiresAt * 1000).toISOString() };
+  const facts: Record<string, string> = { ...transfer.facts, signedRequestId: request.id, requestCreatedAt: new Date(request.createdAt * 1000).toISOString(), requestExpiresAt: new Date(request.expiresAt * 1000).toISOString() };
   checks.push({
     name: 'request signed by recipient (EIP-712)',
     ok: signatureValid,

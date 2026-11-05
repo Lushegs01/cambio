@@ -27,7 +27,8 @@ import { LandingPage } from './components/LandingPage';
 import { UsernameModal } from './components/UsernameModal';
 import { ProfileModal } from './components/ProfileModal';
 import { DemoBanner } from './components/DemoBanner';
-import { getChainConfig } from './config/chains';
+import { MezoProtocolCard } from './components/MezoProtocolCard';
+import { getChainConfig, getDefaultChain } from './config/chains';
 import { useWalletBalances } from './hooks/useWalletBalances';
 import { useActivity } from './hooks/useActivity';
 import { demoBalance, type WalletBalances } from './lib/balances';
@@ -483,6 +484,7 @@ export default function App() {
                 }}
                 isRefreshing={real.isRefreshing}
               />
+              {dataMode === 'real' && (chain || !wallet.isConnected) && <MezoProtocolCard wallet={wallet} chain={chain ?? getDefaultChain()} />}
               {wallet.isConnected && (
                 <RecentActivity
                   transactions={transactions}
