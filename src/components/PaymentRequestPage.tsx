@@ -16,6 +16,8 @@ import { ThemeToggle } from './ThemeToggle';
 import { HalftonePattern } from './HalftonePattern';
 import { SendModal } from './SendModal';
 import { OpenInMetaMask } from './OpenInMetaMask';
+import { FundAndPayPanel } from './FundAndPayPanel';
+import { spendable } from '../lib/balances';
 import logoImage from '@/logo.png';
 
 interface PaymentRequestPageProps {
@@ -24,11 +26,13 @@ interface PaymentRequestPageProps {
   onConnectWallet: () => void;
   onGoToDashboard: () => void;
   onTransferSettled?: (phase: TxPhase, summary: { recipientLabel: string; amount: bigint }) => void;
+  /** Re-reads balances from the chain (after a funding swap). */
+  onRefreshBalances?: () => void;
 }
 
 type SigState = 'verifying' | 'valid' | 'invalid' | 'unsigned';
 
-export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wallet, onConnectWallet, onGoToDashboard, onTransferSettled }) => {
+export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wallet, onConnectWallet, onGoToDashboard, onTransferSettled, onRefreshBalances }) => {
   const { switchChainAsync } = useSwitchChain();
   const [sig, setSig] = useState<SigState>(link.kind === 'signed' ? 'verifying' : 'unsigned');
   const [recipient, setRecipient] = useState<Address | null>(link.kind === 'signed' ? link.request.recipient : link.kind === 'unsigned' ? link.recipient : null);
@@ -118,6 +122,12 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
   const wrongChain = wallet.isConnected && chain && wallet.chainId !== chain.chainId;
   const payable = !!chain && !!recipient && !expired && !notActive && (link.kind === 'unsigned' || sig === 'valid') && !(proof?.state === 'settled');
   const proofLink = link.kind === 'signed' && paidHash ? encodePaymentLink(window.location.origin, link.request, link.signature, paidHash) : null;
+  // Fund & Pay: a verified signed request the connected wallet cannot cover yet in MUSD.
+  const musdBalance = spendable(wallet.balances.musd);
+  const btcBalance = spendable(wallet.balances.btc);
+  const needsFunding =
+    payable && link.kind === 'signed' && sig === 'valid' && wallet.isConnected && !wrongChain && !isOwn && wallet.dataMode === 'real' &&
+    amount !== null && musdBalance !== null && btcBalance !== null && amount > musdBalance;
 
   const handleSwitch = async () => {
     if (!chain) return;
@@ -273,15 +283,20 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
         ) : wallet.dataMode === 'demo' ? (
           <p className="p-3.5 rounded-2xl bg-violet-500/10 text-xs text-center text-violet-700 dark:text-violet-300">Demo mode is on. Switch to real data in the dashboard to pay a real request.</p>
         ) : (
+          <>
+          {needsFunding && chain && amount !== null && musdBalance !== null && btcBalance !== null && (
+            <FundAndPayPanel chain={chain} wallet={wallet} amount={amount} musdBalance={musdBalance} btcBalance={btcBalance} onSwapSettled={() => onRefreshBalances?.()} />
+          )}
           <button
             type="button"
-            disabled={!payable}
+            disabled={!payable || needsFunding}
             onClick={() => setPayOpen(true)}
             className="w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
-            {link.kind === 'signed' && sig !== 'valid' ? 'Waiting for signature check' : amount !== null ? `Review payment of ${formatTokenDisplay(amount, chain.tokens.MUSD.decimals)} MUSD` : 'Choose amount and pay'}
+            {link.kind === 'signed' && sig !== 'valid' ? 'Waiting for signature check' : needsFunding ? 'Add MUSD above to pay this request' : amount !== null ? `Review payment of ${formatTokenDisplay(amount, chain.tokens.MUSD.decimals)} MUSD` : 'Choose amount and pay'}
           </button>
+          </>
         )}
         <button type="button" onClick={onGoToDashboard} className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs text-[#777777] hover:text-[#111111] dark:hover:text-[#FFFFFF]">
           <ArrowLeft className="w-3.5 h-3.5" /> Open Cambio dashboard

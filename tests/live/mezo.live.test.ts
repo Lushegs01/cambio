@@ -57,3 +57,16 @@ describe('live Mezo Testnet (read-only)', () => {
     expect(checkBtcToMusdSwap(chain, swap, s.tx, s.receipt, s.blockTimestampMs).verdict).toBe('PASS');
   });
 });
+
+describe('live Fund & Pay sizing (read-only)', () => {
+  it('sizes a BTC swap whose router-enforced minimum covers a MUSD shortfall', async () => {
+    const { planFunding } = await import('../../src/lib/fundAndPay');
+    for (const need of [1n * 10n ** 18n, 25n * 10n ** 18n, 500n * 10n ** 18n]) {
+      const plan = await planFunding(client as never, chain, need);
+      expect(plan.quote.minAmountOut).toBeGreaterThanOrEqual(need);
+      // Not wildly oversized: the expected output stays within 1.5% of the need (0.5% slippage + fee + rounding).
+      expect(plan.quote.amountOut).toBeLessThan((need * 1015n) / 1000n);
+      console.log(`need ${need / 10n ** 18n} MUSD -> ${plan.btcIn} wei BTC, expected ${plan.quote.amountOut}, min ${plan.quote.minAmountOut}, impact ${plan.quote.priceImpactBps}bps`);
+    }
+  });
+});

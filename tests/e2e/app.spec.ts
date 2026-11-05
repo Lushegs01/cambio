@@ -5,6 +5,7 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { createPublicClient, decodeFunctionData, erc20Abi, http } from 'viem';
 import { buildPaymentRequest, encodePaymentLink, expectedPaymentCalldata, typedDataFor } from '../../src/lib/paymentRequest';
 import { MEZO_TESTNET } from '../../src/config/chains';
 import { connectTestWallet, dismissUsernamePrompt, installTestWallet, sentTransactions } from './testWallet';
@@ -146,6 +147,38 @@ test('a signed request opened in a separate session runs the real on-chain prefl
   expect(sent[0].params[0].to?.toLowerCase()).toBe(MEZO_TESTNET.tokens.MUSD.address.toLowerCase());
   expect(sent[0].params[0].data?.toLowerCase()).toBe(expectedPaymentCalldata(req).toLowerCase());
   expect(sent[0].params[0].data?.toLowerCase()).toContain(`434d4232${req.id.slice(2).toLowerCase()}`);
+  await ctx.close();
+});
+
+test('Fund & Pay: a request larger than the MUSD balance offers an exact BTC swap and asks the wallet for an exact approval', async ({ browser, baseURL }) => {
+  const client = createPublicClient({ transport: http(MEZO_TESTNET.rpcUrls[0]) });
+  const musd = await client.readContract({ address: MEZO_TESTNET.tokens.MUSD.address, abi: erc20Abi, functionName: 'balanceOf', args: [FUNDED_WATCH_ADDRESS] });
+  const { url } = await signedLink(baseURL!, { amount: musd + 5n * 10n ** 18n });
+  const ctx = await browser.newContext({ baseURL });
+  const page = await ctx.newPage();
+  await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
+  await page.goto(url);
+  await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
+  await connectTestWallet(page);
+  await dismissUsernamePrompt(page);
+  await expect(page.getByText('Fund this payment with BTC')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: /add musd above to pay this request/i })).toBeDisabled();
+  const swap = page.getByRole('button', { name: /^swap [\d.]+ btc for musd$/i });
+  await expect(swap).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/router-enforced/)).toBeVisible();
+  await swap.click();
+  await expect(page.getByText('Cancelled in wallet')).toBeVisible({ timeout: 30_000 });
+  // The first wallet prompt is an exact-amount BTC approval for the Mezo Router, never an unlimited one.
+  const sent = await sentTransactions(page);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].params[0].to?.toLowerCase()).toBe(MEZO_TESTNET.tokens.BTC.address.toLowerCase());
+  const approve = decodeFunctionData({ abi: erc20Abi, data: sent[0].params[0].data as `0x${string}` });
+  expect(approve.functionName).toBe('approve');
+  expect((approve.args[0] as string).toLowerCase()).toBe(MEZO_TESTNET.router.toLowerCase());
+  expect(approve.args[1]).toBeGreaterThan(0n);
+  expect(approve.args[1]).toBeLessThan(10n ** 18n);
+  // The signed request is still on screen and still unpaid.
+  await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
   await ctx.close();
 });
 

@@ -355,6 +355,10 @@ export default function App() {
         onConnectWallet={handleOpenWalletModal}
         onGoToDashboard={() => goApp('overview')}
         onTransferSettled={handleTransferSettled}
+        onRefreshBalances={() => {
+          real.refetch();
+          activity.refresh();
+        }}
       />
     );
   }
