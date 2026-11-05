@@ -12,6 +12,7 @@ import type { MezoChainConfig } from '../config/chains';
 import { fetchExplorerActivity } from './activity';
 import { verifySettlement, type SettlementResult, type SignedPaymentRequest } from './paymentRequest';
 import type { ReceiptWithLogs } from './musdTransfer';
+import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry';
 
 export interface SettlementClient {
   getTransaction(a: { hash: Hex }): Promise<{ hash: Hex; from: Address; to: Address | null; input: Hex; chainId?: number }>;
@@ -26,9 +27,13 @@ export type SettlementCheck =
   | { state: 'error'; message: string };
 
 /** Verifies one specific transaction hash against a request (used for payment-proof links). */
-export async function verifyPaymentTx(client: SettlementClient, req: SignedPaymentRequest, hash: Hex): Promise<SettlementCheck> {
+export async function verifyPaymentTx(client: SettlementClient, req: SignedPaymentRequest, hash: Hex, retryDelays: readonly number[] = NOT_FOUND_RETRY_DELAYS_MS): Promise<SettlementCheck> {
   try {
-    const [tx, receipt] = await Promise.all([client.getTransaction({ hash }), client.getTransactionReceipt({ hash })]);
+    // A lagging RPC node can answer "not found" for a mined transaction; retry before concluding.
+    const [tx, receipt] = await Promise.all([
+      retryNotFound(() => client.getTransaction({ hash }), retryDelays),
+      retryNotFound(() => client.getTransactionReceipt({ hash }), retryDelays),
+    ]);
     if (tx.hash.toLowerCase() !== hash.toLowerCase()) return { state: 'error', message: 'RPC returned a different transaction hash.' };
     let ts: number | null = null;
     try {

@@ -6,6 +6,8 @@
  *  - Forwards every read (eth_call, eth_getBalance, eth_estimateGas, …) to the real Mezo Testnet RPC.
  *  - ALWAYS declines eth_sendTransaction with EIP-1193 code 4001. End-to-end tests therefore exercise
  *    the real preflight against live chain state up to the wallet prompt, but can never broadcast.
+ *    The declined request is recorded in window.__cambioSentTransactions, so tests can assert the exact
+ *    calldata (including a payment request's id suffix) that a real wallet would have been asked to sign.
  *
  * In "watch" mode the wallet reports an address it holds no key for (e.g. a public pool contract
  * that holds MUSD), which lets the UI run real balance and fee checks; signing is refused in that mode.
@@ -86,6 +88,7 @@ export async function installTestWallet(page: Page, opts: TestWalletOptions) {
             case 'eth_sendTransaction':
             case 'eth_signTransaction':
             case 'eth_sendRawTransaction':
+              ((window as any).__cambioSentTransactions ||= []).push({ method, params: JSON.parse(JSON.stringify(params ?? [])) });
               throw Object.assign(new Error('User rejected the request.'), { code: 4001 });
             default: {
               const res = await fetch(rpcUrl, {
@@ -128,6 +131,11 @@ export async function installTestWallet(page: Page, opts: TestWalletOptions) {
     { address, chainIdHex: `0x${(opts.chainId ?? 31611).toString(16)}`, rpcUrl: opts.rpcUrl ?? 'https://rpc.test.mezo.org' }
   );
   return { address };
+}
+
+/** Transactions the page asked the test wallet to send (all of them were declined). */
+export async function sentTransactions(page: Page): Promise<{ method: string; params: Array<{ to?: string; data?: string; from?: string }> }[]> {
+  return page.evaluate(() => (window as any).__cambioSentTransactions ?? []);
 }
 
 /** Opens the AppKit modal and connects the injected test wallet. */

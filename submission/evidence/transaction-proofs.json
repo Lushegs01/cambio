@@ -1,0 +1,207 @@
+{
+  "schema": "cambio.evidence.v1",
+  "network": {
+    "name": "Mezo Testnet",
+    "chainId": 31611,
+    "rpc": "https://rpc.test.mezo.org",
+    "explorer": "https://explorer.test.mezo.org"
+  },
+  "howToVerify": "npm run verify:evidence (read-only). Each proof is re-read from the RPC; PASS requires every check to be read and to match. Missing data is INCONCLUSIVE, never PASS.",
+  "discovery": "Hashes were located on 2026-11-05 by resolving the live registry username @lushegs (https://cambio-five.vercel.app/api/identity/username/lushegs -> 0x3c40e5aaf9716254cCC8305aD648C5c08841FC81) and reading that wallet's history and its counterparties from the Mezo Testnet explorer.",
+  "proofs": [
+    {
+      "id": "musd-transfer",
+      "kind": "musd_transfer",
+      "title": "Wallet-approved MUSD transfer between two verified Cambio usernames",
+      "hash": "0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e",
+      "expect": {
+        "from": "0x62632B9a1A54C2Ae9d242DdecB080b05EEB16BF3",
+        "to": "0x3c40e5aaf9716254cCC8305aD648C5c08841FC81",
+        "amount": "10000000000000000000"
+      },
+      "context": "Sender is registered as @solo and recipient as @lushegs in Cambio's SIWE-verified registry. The calldata has no Cambio request-id suffix, so this is a plain MUSD transfer, not a signed-request settlement.",
+      "verification": {
+        "verdict": "PASS",
+        "verifiedAt": "2026-11-05T10:37:16.466Z",
+        "rpc": "https://rpc.test.mezo.org",
+        "headBlockAtCheck": "16587215",
+        "explorerUrl": "https://explorer.test.mezo.org/tx/0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e",
+        "checks": [
+          {
+            "name": "hash matches",
+            "ok": true,
+            "detail": "RPC returned 0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e"
+          },
+          {
+            "name": "network",
+            "ok": true,
+            "detail": "chain 31611 (expected 31611)"
+          },
+          {
+            "name": "receipt status",
+            "ok": true,
+            "detail": "status=success in block 16390715"
+          },
+          {
+            "name": "block timestamp",
+            "ok": true,
+            "detail": "2026-10-26T23:45:36.000Z"
+          },
+          {
+            "name": "target is MUSD",
+            "ok": true,
+            "detail": "to=0x118917a40faf1cd7a13db0ef56c86de7973ac503 (MUSD 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503)"
+          },
+          {
+            "name": "calldata is transfer(to, amount)",
+            "ok": true,
+            "detail": "selector 0xa9059cbb"
+          },
+          {
+            "name": "Transfer event matches calldata",
+            "ok": true,
+            "detail": "Transfer(0x62632b9a1a54c2ae9d242ddecb080b05eeb16bf3 → 0x3c40e5aaf9716254cCC8305aD648C5c08841FC81, 10000000000000000000) emitted by MUSD"
+          },
+          {
+            "name": "expected recipient",
+            "ok": true,
+            "detail": "expected 0x3c40e5aaf9716254cCC8305aD648C5c08841FC81"
+          },
+          {
+            "name": "expected amount",
+            "ok": true,
+            "detail": "expected 10000000000000000000"
+          },
+          {
+            "name": "expected sender",
+            "ok": true,
+            "detail": "expected 0x62632B9a1A54C2Ae9d242DdecB080b05EEB16BF3"
+          }
+        ],
+        "facts": {
+          "chainId": "31611",
+          "from": "0x62632B9a1A54C2Ae9d242DdecB080b05EEB16BF3",
+          "to": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
+          "blockNumber": "16390715",
+          "gasUsed": "34585",
+          "blockTime": "2026-10-26T23:45:36.000Z",
+          "recipient": "0x3c40e5aaf9716254cCC8305aD648C5c08841FC81",
+          "amount": "10000000000000000000",
+          "calldataSuffix": "none"
+        }
+      }
+    },
+    {
+      "id": "btc-to-musd-swap",
+      "kind": "btc_to_musd_swap",
+      "title": "BTC -> MUSD swap through the official Mezo Router (0.01 BTC -> 786.1477 MUSD)",
+      "hash": "0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e",
+      "expect": {
+        "trader": "0x3c40e5aaf9716254cCC8305aD648C5c08841FC81"
+      },
+      "context": "Preceded by the exact-amount BTC approval 0xb44cabdc4f5d28c8023a5b13ea5b397a38e6d77c2edac54363006b09a6c46d79 (0.01 BTC to the Router). Testnet liquidity is not a market price.",
+      "verification": {
+        "verdict": "PASS",
+        "verifiedAt": "2026-11-05T10:37:17.149Z",
+        "rpc": "https://rpc.test.mezo.org",
+        "headBlockAtCheck": "16587215",
+        "explorerUrl": "https://explorer.test.mezo.org/tx/0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e",
+        "checks": [
+          {
+            "name": "hash matches",
+            "ok": true,
+            "detail": "RPC returned 0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e"
+          },
+          {
+            "name": "network",
+            "ok": true,
+            "detail": "chain 31611 (expected 31611)"
+          },
+          {
+            "name": "receipt status",
+            "ok": true,
+            "detail": "status=success in block 16382064"
+          },
+          {
+            "name": "block timestamp",
+            "ok": true,
+            "detail": "2026-10-26T13:45:26.000Z"
+          },
+          {
+            "name": "target is Mezo Router",
+            "ok": true,
+            "detail": "to=0x9a1ff7fe3a0f69959a3fba1f1e5ee18e1a9cd7e9 (Router 0x9a1ff7FE3a0F69959A3fBa1F1e5ee18e1A9CD7E9)"
+          },
+          {
+            "name": "calldata is swapExactTokensForTokens",
+            "ok": true,
+            "detail": "decoded with the Router ABI"
+          },
+          {
+            "name": "route BTC → MUSD",
+            "ok": true,
+            "detail": "0x7b7C000000000000000000000000000000000000 → 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
+          },
+          {
+            "name": "route uses Mezo PoolFactory",
+            "ok": true,
+            "detail": "factory 0x4947243CC818b627A5D06d14C4eCe7398A23Ce1A"
+          },
+          {
+            "name": "BTC paid into MUSD/BTC pool",
+            "ok": true,
+            "detail": "Transfer(0x3c40e5aaf9716254ccc8305ad648c5c08841fc81 → 0xd16A5Df82120ED8D626a1a15232bFcE2366d6AA9, 10000000000000000) on the BTC precompile"
+          },
+          {
+            "name": "MUSD received ≥ amountOutMin",
+            "ok": true,
+            "detail": "received 786147707491538169268, router minimum 782216968954080478421"
+          },
+          {
+            "name": "expected trader",
+            "ok": true,
+            "detail": "expected 0x3c40e5aaf9716254cCC8305aD648C5c08841FC81"
+          }
+        ],
+        "facts": {
+          "chainId": "31611",
+          "from": "0x3c40e5aaf9716254cCC8305aD648C5c08841FC81",
+          "to": "0x9a1ff7FE3a0F69959A3fBa1F1e5ee18e1A9CD7E9",
+          "blockNumber": "16382064",
+          "gasUsed": "249931",
+          "feeWei": "36489926",
+          "blockTime": "2026-10-26T13:45:26.000Z",
+          "amountIn": "10000000000000000",
+          "amountOutMin": "782216968954080478421",
+          "recipient": "0x3c40e5aaf9716254cCC8305aD648C5c08841FC81",
+          "deadline": "1793023511",
+          "pool": "0xd16A5Df82120ED8D626a1a15232bFcE2366d6AA9",
+          "amountOut": "786147707491538169268"
+        }
+      }
+    },
+    {
+      "id": "signed-payment-settlement",
+      "kind": "signed_request_settlement",
+      "title": "Payment that settles an EIP-712 signed Cambio request",
+      "hash": null,
+      "paymentLink": null,
+      "context": "PENDING. No transaction carrying Cambio's CMB2 request-id calldata suffix was found in the history of @lushegs, @solo or their counterparties (0xA76Ee770458928260f6541685d87f707cbb9958b, 0xB7717e57196e9866de08d5fb4177d8b09f375bfc) as of 2026-11-05. Supply the payment hash AND the signed payment link (r= and s=) to complete this proof. See signed-payment-settlement.md.",
+      "verification": {
+        "verdict": "INCONCLUSIVE",
+        "verifiedAt": "2026-11-05T10:37:17.149Z",
+        "rpc": "https://rpc.test.mezo.org",
+        "headBlockAtCheck": "16587215",
+        "explorerUrl": null,
+        "checks": [
+          {
+            "name": "evidence available",
+            "ok": null,
+            "detail": "No transaction hash has been supplied for this proof."
+          }
+        ],
+        "facts": {}
+      }
+    }
+  ]
+}

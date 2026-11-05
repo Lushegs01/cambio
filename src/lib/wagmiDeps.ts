@@ -13,7 +13,8 @@ import type { SwapDeps } from './swap';
 import { getKnownChainConfig } from '../config/chains';
 import { wagmiConfig } from '../config/walletConnect';
 import type { TransferDeps, ReceiptWithLogs } from './musdTransfer';
-import { readLedger, upsertLedgerEntry, updateLedgerEntry, type LedgerEntry, type ReceiptLike } from './transactions';
+import { readLedger, upsertLedgerEntry, updateLedgerEntry, type LedgerEntry } from './transactions';
+import { retryNull } from './rpcRetry';
 
 function routerFor(chainId: number): Address {
   const chain = getKnownChainConfig(chainId);
@@ -45,14 +46,17 @@ export async function waitForReceipt(a: { chainId: number; hash: Hex; timeoutMs:
   return publicClientFor(a.chainId).waitForTransactionReceipt({ hash: a.hash, timeout: a.timeoutMs });
 }
 
+/** Null only after repeated "not found" answers: the public RPC's nodes can briefly disagree. */
 export async function getReceiptOrNull(chainId: number, hash: Hex): Promise<ReceiptWithLogs | null> {
-  try {
-    return await publicClientFor(chainId).getTransactionReceipt({ hash });
-  } catch (err) {
-    const name = (err as { name?: string }).name;
-    if (name === 'TransactionReceiptNotFoundError') return null;
-    throw err;
-  }
+  return retryNull(async () => {
+    try {
+      return await publicClientFor(chainId).getTransactionReceipt({ hash });
+    } catch (err) {
+      const name = (err as { name?: string }).name;
+      if (name === 'TransactionReceiptNotFoundError') return null;
+      throw err;
+    }
+  });
 }
 
 export async function getBlockTimestamp(a: { chainId: number; blockNumber: bigint }): Promise<number> {

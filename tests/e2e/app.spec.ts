@@ -5,9 +5,9 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { buildPaymentRequest, encodePaymentLink, typedDataFor } from '../../src/lib/paymentRequest';
+import { buildPaymentRequest, encodePaymentLink, expectedPaymentCalldata, typedDataFor } from '../../src/lib/paymentRequest';
 import { MEZO_TESTNET } from '../../src/config/chains';
-import { connectTestWallet, dismissUsernamePrompt, installTestWallet } from './testWallet';
+import { connectTestWallet, dismissUsernamePrompt, installTestWallet, sentTransactions } from './testWallet';
 
 /** A public Mezo Testnet pool contract that holds MUSD and BTC. Used read-only ("watch" mode); no key exists for it here. */
 const FUNDED_WATCH_ADDRESS = MEZO_TESTNET.pools[0].address;
@@ -120,7 +120,7 @@ test('a declined signature does not claim a username', async ({ page, request })
 });
 
 test('a signed request opened in a separate session runs the real on-chain preflight, then respects a wallet rejection', async ({ browser, baseURL }) => {
-  const { url } = await signedLink(baseURL!);
+  const { url, req } = await signedLink(baseURL!);
   const ctx = await browser.newContext({ baseURL });
   const page = await ctx.newPage();
   await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
@@ -138,6 +138,14 @@ test('a signed request opened in a separate session runs the real on-chain prefl
   await page.getByRole('button', { name: /confirm in wallet/i }).click();
   await expect(page.getByText('Cancelled in wallet')).toBeVisible();
   await expect(page.getByText(/nothing was sent/i)).toBeVisible();
+  // The wallet was asked to sign exactly MUSD.transfer(recipient, amount) ‖ "CMB2" ‖ request id.
+  // Without this suffix a payment cannot be proven to settle the signed request.
+  const sent = await sentTransactions(page);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].method).toBe('eth_sendTransaction');
+  expect(sent[0].params[0].to?.toLowerCase()).toBe(MEZO_TESTNET.tokens.MUSD.address.toLowerCase());
+  expect(sent[0].params[0].data?.toLowerCase()).toBe(expectedPaymentCalldata(req).toLowerCase());
+  expect(sent[0].params[0].data?.toLowerCase()).toContain(`434d4232${req.id.slice(2).toLowerCase()}`);
   await ctx.close();
 });
 
