@@ -10,7 +10,8 @@ import { formatTokenDisplay, formatUnitsExact } from '../lib/amounts';
 import { getChainConfig } from '../config/chains';
 import { lookupAddress, resolveUsername } from '../services/identityClient';
 import { publicClientFor } from '../lib/wagmiDeps';
-import { verifyPaymentTx, type SettlementCheck } from '../lib/requestSettlement';
+import { findRequestSettlement, verifyPaymentTx, type SettlementCheck } from '../lib/requestSettlement';
+import { getInvoice, saveInvoice, submitSettlement } from '../services/invoiceClient';
 import type { TxPhase } from '../lib/transactions';
 import { ThemeToggle } from './ThemeToggle';
 import { HalftonePattern } from './HalftonePattern';
@@ -44,6 +45,8 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
   const [copied, setCopied] = useState<string | null>(null);
   const [switchError, setSwitchError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  /** Double-payment check: was this signed request already paid on-chain? */
+  const [dup, setDup] = useState<'idle' | 'checking' | 'clear' | 'uncertain'>('idle');
   useEffect(() => { const timer = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000); return () => clearInterval(timer); }, []);
 
   const chain = link.kind === 'signed' ? getChainConfig(link.request.chainId) : link.kind === 'unsigned' ? getChainConfig(link.chainId) : null;
@@ -106,6 +109,32 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
     };
   }, [link, paidHash, chain, sig]);
 
+  // 4. Before offering payment, look for an existing settlement (registry hint + chain scan). Any hit is
+  //    re-verified on-chain by step 3; a failed check is shown as uncertain, never as "unpaid".
+  useEffect(() => {
+    if (link.kind !== 'signed' || sig !== 'valid' || !chain || link.proofTx) return;
+    let cancelled = false;
+    setDup('checking');
+    (async () => {
+      const hinted = await getInvoice(link.request.recipient, link.request.id).catch(() => null);
+      if (cancelled) return;
+      if (hinted?.settlement && JSON.stringify(hinted.request) === JSON.stringify(link.request)) {
+        setPaidHash(hinted.settlement.txHash);
+        setDup('clear');
+        return;
+      }
+      const found = await findRequestSettlement(chain, publicClientFor(chain.chainId) as never, link.request).catch(() => null);
+      if (cancelled) return;
+      if (found?.state === 'settled') {
+        setPaidHash(found.hash);
+        setDup('clear');
+      } else setDup(found?.state === 'not_found' ? 'clear' : 'uncertain');
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [link, sig, chain]);
+
   const lockedRequest = useMemo(
     () => (link.kind === 'signed' && sig === 'valid' ? { request: link.request, recipientLabel: verifiedName ?? shortenAddress(link.request.recipient) } : null),
     [link, sig, verifiedName]
@@ -120,7 +149,7 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
 
   const isOwn = !!(wallet.address && recipient && wallet.address.toLowerCase() === recipient.toLowerCase());
   const wrongChain = wallet.isConnected && chain && wallet.chainId !== chain.chainId;
-  const payable = !!chain && !!recipient && !expired && !notActive && (link.kind === 'unsigned' || sig === 'valid') && !(proof?.state === 'settled');
+  const payable = !!chain && !!recipient && !expired && !notActive && (link.kind === 'unsigned' || sig === 'valid') && !(proof?.state === 'settled') && dup !== 'checking' && !(paidHash && proof === null);
   const proofLink = link.kind === 'signed' && paidHash ? encodePaymentLink(window.location.origin, link.request, link.signature, paidHash) : null;
   // Fund & Pay: a verified signed request the connected wallet cannot cover yet in MUSD.
   const musdBalance = spendable(wallet.balances.musd);
@@ -229,6 +258,15 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
         </div>
       )}
 
+      {link.kind === 'signed' && sig === 'valid' && !paidHash && dup === 'checking' && (
+        <Banner tone="info" icon={<Loader2 className="w-4 h-4 animate-spin" />} title="Checking whether this request was already paid…" />
+      )}
+      {link.kind === 'signed' && sig === 'valid' && !paidHash && dup === 'uncertain' && (
+        <Banner tone="warn" icon={<AlertCircle className="w-4 h-4" />} title="Could not confirm this request is unpaid">
+          Cambio could not search all payments to this address right now. Ask the recipient before paying again if you may already have paid it.
+        </Banner>
+      )}
+
       {/* Settlement proof */}
       {paidHash && chain && (
         <div className="relative z-10">
@@ -313,7 +351,16 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
         initialRecipient={lockedRequest ? undefined : recipient ?? undefined}
         initialAmount={lockedRequest || amount === null ? undefined : formatUnitsExact(amount, chain?.tokens.MUSD.decimals ?? 18)}
         initialMemo={lockedRequest ? undefined : memo}
-        onRequestPaid={(hash) => setPaidHash(hash)}
+        onRequestPaid={(hash) => {
+          setPaidHash(hash);
+          // Record it in the merchant's invoice registry. The server verifies the signature and the payment on-chain itself.
+          if (link.kind === 'signed') {
+            saveInvoice(link.request, link.signature)
+              .catch(() => undefined)
+              .then(() => submitSettlement(link.request.recipient, link.request.id, hash))
+              .catch(() => undefined);
+          }
+        }}
       />
     </Shell>
   );

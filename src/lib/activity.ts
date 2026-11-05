@@ -100,25 +100,66 @@ export function parseExplorerTransfers(json: unknown, owner: Address, chain: Mez
   return out;
 }
 
+export type ExplorerPageParams = Record<string, string | number>;
+
+export interface ExplorerPage {
+  items: ActivityItem[];
+  /** Rows the explorer returned before Cambio's own filtering (to tell an empty page from a filtered one). */
+  rawCount: number;
+  /** Oldest row timestamp on this page (ms), when known. */
+  oldest: number | null;
+  next: ExplorerPageParams | null;
+}
+
+function validPageParams(x: unknown): ExplorerPageParams | null {
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return null;
+  const out: ExplorerPageParams = {};
+  for (const [k, v] of Object.entries(x as Record<string, unknown>)) {
+    if (!/^[a-z_]{1,40}$/.test(k) || (typeof v !== 'string' && typeof v !== 'number') || String(v).length > 100) return null;
+    out[k] = v;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** One page of MUSD token transfers for an address, newest first. Throws on explorer failure. */
+export async function fetchExplorerTransfersPage(
+  chain: MezoChainConfig,
+  owner: Address,
+  params: ExplorerPageParams | null = null,
+  fetchImpl: typeof fetch = fetch,
+  timeoutMs = 8000
+): Promise<ExplorerPage> {
+  const query = new URLSearchParams({ type: 'ERC-20', token: chain.tokens.MUSD.address });
+  for (const [k, v] of Object.entries(params ?? {})) query.set(k, String(v));
+  const url = `${chain.explorerApiUrl}/api/v2/addresses/${owner}/token-transfers?${query.toString()}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchImpl(url, { signal: controller.signal, headers: { accept: 'application/json' } });
+    if (res.status === 404) return { items: [], rawCount: 0, oldest: null, next: null }; // address never seen by the indexer
+    if (!res.ok) throw new Error(`Explorer responded ${res.status}`);
+    const body = await res.json();
+    if (!body || !Array.isArray(body.items)) throw new Error('Malformed explorer response');
+    const times = (body.items as Record<string, unknown>[]).map((i) => (typeof i?.timestamp === 'string' ? Date.parse(i.timestamp) : NaN)).filter(Number.isFinite);
+    return {
+      items: parseExplorerTransfers(body, owner, chain),
+      rawCount: body.items.length,
+      oldest: times.length ? Math.min(...times) : null,
+      next: validPageParams(body.next_page_params),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** The latest page of MUSD transfers (activity history). */
 export async function fetchExplorerActivity(
   chain: MezoChainConfig,
   owner: Address,
   fetchImpl: typeof fetch = fetch,
   timeoutMs = 8000
 ): Promise<ActivityItem[]> {
-  const url = `${chain.explorerApiUrl}/api/v2/addresses/${owner}/token-transfers?type=ERC-20&token=${chain.tokens.MUSD.address}`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetchImpl(url, { signal: controller.signal, headers: { accept: 'application/json' } });
-    if (res.status === 404) return []; // address never seen by the indexer
-    if (!res.ok) throw new Error(`Explorer responded ${res.status}`);
-    const body = await res.json();
-    if (!body || !Array.isArray(body.items)) throw new Error('Malformed explorer response');
-    return parseExplorerTransfers(body, owner, chain);
-  } finally {
-    clearTimeout(timer);
-  }
+  return (await fetchExplorerTransfersPage(chain, owner, null, fetchImpl, timeoutMs)).items;
 }
 
 const transferEvent = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)');

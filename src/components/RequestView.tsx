@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { QrCode, Copy, Check, Share2, Download, ArrowRight, AlertCircle, Wallet, ExternalLink, Trash2, ShieldCheck, Loader2, RefreshCw, PenLine } from 'lucide-react';
+import { QrCode, Copy, Check, Share2, Download, ArrowRight, AlertCircle, Wallet, ExternalLink, ShieldCheck, Loader2, RefreshCw, PenLine, CloudCheck, CloudOff } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { signTypedData } from 'wagmi/actions';
 import type { Hex } from 'viem';
@@ -11,10 +11,8 @@ import { wagmiConfig } from '../config/walletConnect';
 import { formatTokenDisplay, parseTokenAmount } from '../lib/amounts';
 import {
   buildPaymentRequest,
-  deleteStoredRequest,
   encodePaymentLink,
   formatTimeRemaining,
-  isExpired,
   loadStoredRequests,
   MAX_MEMO_LENGTH,
   saveStoredRequest,
@@ -23,7 +21,9 @@ import {
   type StoredRequest,
 } from '../lib/paymentRequest';
 import { classifyTxError } from '../lib/txErrors';
-import { findRequestSettlement, type SettlementCheck } from '../lib/requestSettlement';
+import { findRequestSettlement, type SettlementSearch } from '../lib/requestSettlement';
+import { saveInvoice, submitSettlement, InvoiceApiError } from '../services/invoiceClient';
+import { MerchantInvoices } from './MerchantInvoices';
 import { publicClientFor } from '../lib/wagmiDeps';
 import { getChainConfig } from '../config/chains';
 
@@ -52,6 +52,7 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
   const [copied, setCopied] = useState(false);
   const [recent, setRecent] = useState<StoredRequest[]>([]);
   const [statuses, setStatuses] = useState<Record<string, Status>>({});
+  const [saved, setSaved] = useState<Record<string, 'saving' | 'saved' | string>>({});
 
   const chain = wallet.chain;
   const decimals = chain?.tokens.MUSD.decimals ?? 18;
@@ -74,20 +75,24 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
     const reqChain = getChainConfig(entry.request.chainId);
     if (!reqChain) return;
     setStatuses((s) => ({ ...s, [entry.request.id]: { kind: 'checking' } }));
-    const res: SettlementCheck = await findRequestSettlement(reqChain, publicClientFor(reqChain.chainId) as never, entry.request);
+    const res: SettlementSearch = await findRequestSettlement(reqChain, publicClientFor(reqChain.chainId) as never, entry.request);
     setStatuses((s) => ({
       ...s,
       [entry.request.id]:
         res.state === 'settled'
           ? { kind: 'paid', hash: res.hash, late: res.result.status === 'settled_after_expiry' }
-          : res.state === 'error'
+          : res.state === 'error' || res.state === 'incomplete'
           ? { kind: 'unknown', message: res.message }
+          : res.state === 'invalid'
+          ? { kind: 'unknown', message: 'A matching transfer did not verify as this request’s payment.' }
           : { kind: 'unpaid' },
     }));
     if (res.state === 'settled') {
       const updated = { ...entry, settlementTx: res.hash };
       saveStoredRequest(updated);
       setRecent(loadStoredRequests(entry.request.recipient));
+      // The server re-verifies on-chain before recording; failure here does not change what the chain shows.
+      submitSettlement(entry.request.recipient, entry.request.id, res.hash).catch(() => undefined);
     }
   };
 
@@ -129,6 +134,11 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
       setRecent(loadStoredRequests(wallet.address));
       setCurrent(entry);
       setStatuses((s) => ({ ...s, [req.id]: { kind: 'unpaid' } }));
+      // Persist to the invoice registry so it survives this browser. The link works either way.
+      setSaved((s) => ({ ...s, [req.id]: 'saving' }));
+      saveInvoice(req, signature)
+        .then(() => setSaved((s) => ({ ...s, [req.id]: 'saved' })))
+        .catch((err) => setSaved((s) => ({ ...s, [req.id]: err instanceof InvoiceApiError ? err.message : 'The invoice registry is unavailable.' })));
     } catch (err) {
       const c = classifyTxError(err);
       setError(c.code === 'rejected' ? 'Signing was cancelled in your wallet. No request was created.' : (err as Error).message || c.message);
@@ -320,6 +330,7 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
                 {current.request.memo && <p className="text-xs text-[#555555] dark:text-[#A0A0A0] italic truncate">“{current.request.memo}”</p>}
                 <div className="text-[11px] font-mono text-[#777777]">{formatTimeRemaining(current.request.expiresAt)}</div>
                 <RequestStatusLine status={status} chainId={current.request.chainId} />
+                <SavedLine state={saved[current.request.id]} />
               </div>
               <div className="flex flex-col items-center p-5 rounded-2xl bg-[#F5F5F3] dark:bg-[#1A1A1D] border border-[#E2E2E0] dark:border-[#26262B] space-y-3">
                 <div className="p-3 bg-white rounded-xl border border-[#E2E2E0]">
@@ -362,55 +373,32 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
             </div>
           )}
 
-          {recent.length > 0 && (
-            <div className="bg-[#FFFFFF] dark:bg-[#141416] rounded-3xl border border-[#E2E2E0] dark:border-[#26262B] p-5 sm:p-6 space-y-3.5 shadow-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E2E2E0] dark:border-[#26262B]">
-                <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-[#111111] dark:text-[#FFFFFF]">Your requests ({recent.length})</span>
-                <span className="text-[10px] font-mono text-[#777777]">Saved on this device</span>
-              </div>
-              <ul className="space-y-2 max-h-72 overflow-y-auto">
-                {recent.map((r) => {
-                  const st = r.settlementTx ? ({ kind: 'paid', hash: r.settlementTx, late: false } as Status) : statuses[r.request.id];
-                  return (
-                    <li key={r.request.id} className="p-3 rounded-2xl bg-[#F5F5F3] dark:bg-[#1A1A1D] flex items-center justify-between gap-3 group">
-                      <button type="button" onClick={() => setCurrent(r)} className="min-w-0 text-left flex-1">
-                        <span className="text-sm font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">{formatTokenDisplay(BigInt(r.request.amount), decimals)} MUSD</span>
-                        <span className="ml-2 text-[10px] font-mono text-[#777777]">
-                          {st?.kind === 'paid' ? 'Paid' : isExpired(r.request.expiresAt) ? 'Expired' : formatTimeRemaining(r.request.expiresAt)}
-                        </span>
-                        {r.request.memo && <span className="block text-[11px] text-[#777777] truncate max-w-[200px]">{r.request.memo}</span>}
-                      </button>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {st?.kind !== 'paid' && (
-                          <button type="button" onClick={() => checkStatus(r)} className="p-1 text-[#777777] hover:text-[#111111] dark:hover:text-[#FFFFFF]" aria-label="Check if paid">
-                            <RefreshCw className={`w-3.5 h-3.5 ${st?.kind === 'checking' ? 'animate-spin' : ''}`} />
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            deleteStoredRequest(r.request.recipient, r.request.id);
-                            setRecent(loadStoredRequests(r.request.recipient));
-                            if (current?.request.id === r.request.id) setCurrent(null);
-                          }}
-                          className="p-1 text-[#999999] hover:text-red-500"
-                          aria-label="Remove from this device"
-                          title="Removes it from this device only. The link stays valid until it expires."
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
+
+      {wallet.isConnected && wallet.address && chain && (
+        <MerchantInvoices
+          wallet={wallet}
+          chain={chain}
+          local={recent}
+          onLocalChanged={() => {
+            const list = loadStoredRequests(wallet.address!);
+            setRecent(list);
+            if (current && !list.some((r) => r.request.id === current.request.id)) setCurrent(null);
+          }}
+          onOpen={(row) => setCurrent({ request: row.request, signature: row.signature, settlementTx: row.settlementTx ?? undefined })}
+        />
+      )}
     </div>
   );
 };
+
+function SavedLine({ state }: { state?: string }) {
+  if (!state) return null;
+  if (state === 'saving') return <p className="text-[11px] text-[#777777] inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Saving to the invoice registry…</p>;
+  if (state === 'saved') return <p className="text-[11px] text-[#777777] inline-flex items-center gap-1"><CloudCheck className="w-3 h-3" /> Saved to the invoice registry</p>;
+  return <p className="text-[11px] text-amber-700 dark:text-amber-400 inline-flex items-center gap-1"><CloudOff className="w-3 h-3" /> Saved on this device only. {state}</p>;
+}
 
 function RequestStatusLine({ status, chainId }: { status?: Status; chainId: number }) {
   if (!status) return null;

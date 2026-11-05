@@ -313,6 +313,35 @@ test('recipient creates a signed request through its real wallet signature and o
   await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
 });
 
+test('a signed invoice is stored server-side and recovered on another device after a wallet sign-in', async ({ browser, baseURL }) => {
+  const key = generatePrivateKey();
+  const memo = `Pilot invoice ${Date.now()}`;
+  const deviceA = await browser.newContext({ baseURL });
+  const a = await deviceA.newPage();
+  await installTestWallet(a, { privateKey: key });
+  await a.goto('/app/request'); await connectTestWallet(a); await dismissUsernamePrompt(a);
+  await a.getByLabel(/amount/i).first().fill('12.5');
+  await a.getByLabel(/note/i).fill(memo);
+  await a.getByRole('button', { name: /sign & create request/i }).click();
+  await expect(a.getByText('Saved to the invoice registry')).toBeVisible();
+  await deviceA.close();
+
+  // A different browser profile: nothing in local storage. Listing needs a wallet sign-in.
+  const deviceB = await browser.newContext({ baseURL });
+  const b = await deviceB.newPage();
+  await installTestWallet(b, { privateKey: key });
+  await b.goto('/app/request'); await connectTestWallet(b); await dismissUsernamePrompt(b);
+  await expect(b.getByText(memo)).toHaveCount(0);
+  await b.getByRole('button', { name: /sign in to sync across devices/i }).click();
+  await expect(b.getByText('Synced with the invoice registry')).toBeVisible();
+  await expect(b.getByText(memo)).toBeVisible();
+  await expect(b.getByText('12.50 MUSD').first()).toBeVisible();
+  await expect(b.getByText('Awaiting payment').first()).toBeVisible();
+  // Totals count only verified payments.
+  await expect(b.getByText('Paid (verified)')).toBeVisible();
+  await deviceB.close();
+});
+
 test('empty testnet pool is unavailable and quotes are labeled as test liquidity', async ({ page }) => {
   await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
   await page.goto('/app/swap'); await connectTestWallet(page); await dismissUsernamePrompt(page);

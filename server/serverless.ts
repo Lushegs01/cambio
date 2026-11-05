@@ -34,10 +34,10 @@ export function createServerlessHandler(
           // Validate Express's subnet configuration before attempting database initialization.
           secured = createApiAppWrapper(trustProxy);
         } catch { throw new ConfigurationError('TRUST_PROXY'); }
-        const { identity, error, rateLimitStore } = await initialize(env, 'production');
+        const { identity, invoices, error, rateLimitStore } = await initialize(env, 'production');
         if (!identity) retryAt = now() + 30_000;
         const app = createApiApp({
-          identity, identityInitError: error, rateLimitStore, publicOrigin, trustProxy,
+          identity, invoices, identityInitError: error, rateLimitStore, publicOrigin, trustProxy,
           allowedOrigins: (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),
         });
         // Apply headers before any API response, including errors and health checks.
