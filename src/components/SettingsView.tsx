@@ -11,10 +11,8 @@ import {
   Moon,
   Laptop,
   Copy,
-  AtSign,
   Coins,
-  ChevronRight,
-  Globe
+  ChevronRight
 } from 'lucide-react';
 import { WalletState } from '../types';
 import { getExplorerAddressUrl, shortenAddress } from '../utils/format';
@@ -51,7 +49,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const {
-    preferredCurrency,
     activeCurrencyMeta,
     rateStatus,
     lastUpdated,

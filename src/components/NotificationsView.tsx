@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Bell, 
-  Check, 
   CheckCheck, 
   Trash2, 
   ArrowUpRight, 
-  Wallet, 
-  ShieldCheck, 
-  Filter, 
-  Clock,
-  Sparkles,
-  AlertCircle
+  Wallet
 } from 'lucide-react';
 import { NotificationItem, NavItemKey } from '../types';
 import { HalftonePattern } from './HalftonePattern';
@@ -28,7 +22,6 @@ export const NotificationsView: React.FC<NotificationsViewProps> = ({
   onMarkAllRead,
   onClearAll,
   onMarkSingleRead,
-  onNavigate,
 }) => {
   const [filter, setFilter] = useState<'all' | 'unread' | 'payment' | 'wallet' | 'system'>('all');
 

@@ -11,7 +11,7 @@
  */
 
 import { type Address, type Hex } from 'viem';
-import { erc20Abi, poolFactoryAbi, routerAbi } from '../config/abis.js';
+import { poolFactoryAbi, routerAbi } from '../config/abis.js';
 import { findPool, type MezoChainConfig, type TokenConfig } from '../config/chains.js';
 import { applySlippage } from './amounts.js';
 import { classifyTxError, TxPreflightError } from './txErrors.js';
@@ -258,7 +258,7 @@ export async function executeSwap(deps: SwapDeps, chain: MezoChainConfig, from: 
     deps.updateLedger?.(chain.chainId, from, hash, { status: 'unknown' });
     return finish({ phase: 'unknown', hash, message: 'The swap was broadcast but its outcome is not confirmed yet. Check the explorer.' });
   }
-  let ts: number | null = null;
+  let ts: number | null;
   try {
     ts = await deps.getBlockTimestamp({ chainId: chain.chainId, blockNumber: receipt.blockNumber });
   } catch {

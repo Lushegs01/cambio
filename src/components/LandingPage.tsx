@@ -19,7 +19,6 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({
   wallet,
   onConnectWallet,
-  onDisconnectWallet,
   onExplore,
   connectionError,
   onDismissError,

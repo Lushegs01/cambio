@@ -28,6 +28,7 @@ describe('Vercel API entry point', () => {
     const ts = await import('typescript');
     const cache = path.resolve('node_modules/.cache'); mkdirSync(cache, { recursive: true });
     const temporary = mkdtempSync(path.join(cache, 'cambio-node-function-'));
+    if (!temporary.startsWith(cache + path.sep)) throw new Error('Temporary function directory is outside the test cache');
     try {
       writeFileSync(path.join(temporary, 'package.json'), JSON.stringify({ type: 'module' }));
       for (const file of globSync(['api/**/*.ts', 'server/**/*.ts', 'shared/**/*.ts', 'src/config/chains.ts', 'src/config/abis.ts', 'src/lib/**/*.ts'])) {
@@ -51,7 +52,6 @@ describe('Vercel API entry point', () => {
       `], { encoding: 'utf8', timeout: 15_000, env: { ...process.env, IDENTITY_STORE: 'memory', ALLOW_NON_DURABLE_IDENTITY: 'false', APP_URL: origin } });
       expect(result).toContain('compiled-function-ready');
     } finally {
-      if (!temporary.startsWith(cache + path.sep)) throw new Error('Temporary function directory is outside the test cache');
       rmSync(temporary, { recursive: true, force: true });
     }
   });

@@ -145,7 +145,7 @@ export class InvoiceService {
     if (!this.allowed.includes(request.chainId)) throw new InvoiceError(400, 'unsupported_chain', 'Invoices are only stored for the networks this deployment supports.');
     if (typeof body.signature !== 'string' || !/^0x(?:[0-9a-fA-F]{2}){1,2048}$/.test(body.signature)) throw new InvoiceError(400, 'invalid_signature', 'Signature is malformed.');
     const signature = body.signature as Hex;
-    let valid = false;
+    let valid: boolean;
     try {
       valid = await this.verifyRequest(request, signature);
     } catch {

@@ -49,8 +49,10 @@ export function useFundingPlan(chain: MezoChainConfig | null, need: bigint, enab
     if (paused) return;
     refresh();
     const timer = setInterval(() => document.visibilityState === 'visible' && refresh(), REFRESH_MS);
+    // Invalidate in-flight reads from this effect run (seq is a counter, not a DOM ref).
+    const counter = seq;
     return () => {
-      ++seq.current;
+      ++counter.current;
       clearInterval(timer);
     };
   }, [refresh, paused]);

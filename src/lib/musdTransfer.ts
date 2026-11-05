@@ -11,7 +11,7 @@ import { erc20Abi } from '../config/abis.js';
 import type { MezoChainConfig } from '../config/chains.js';
 import { classifyTxError, TxPreflightError } from './txErrors.js';
 import { formatTokenDisplay } from './amounts.js';
-import { phaseFromReceipt, summarizeReceipt, type LedgerEntry, type LedgerPatch, type ReceiptLike, type TxPhase } from './transactions.js';
+import { phaseFromReceipt, summarizeReceipt, type LedgerEntry, type LedgerPatch, type TxPhase } from './transactions.js';
 
 export type { ReceiptWithLogs } from './receiptEvidence.js';
 import { receiptHasTransfer, type ReceiptWithLogs } from './receiptEvidence.js';
@@ -188,7 +188,7 @@ export async function executeMusdTransfer(
     });
   }
 
-  let blockTimestamp: number | null = null;
+  let blockTimestamp: number | null;
   try {
     blockTimestamp = await deps.getBlockTimestamp({ chainId: p.chain.chainId, blockNumber: receipt.blockNumber });
   } catch {

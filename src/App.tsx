@@ -137,7 +137,7 @@ export default function App() {
         if (cancelled) return;
         setConnectedUsername(rec?.username ?? null);
         const dismissedKey = `cambio_username_prompt_dismissed_${address.toLowerCase()}`;
-        let dismissed = false;
+        let dismissed: boolean;
         try {
           dismissed = !!sessionStorage.getItem(dismissedKey);
         } catch {

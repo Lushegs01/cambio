@@ -120,7 +120,7 @@ export const MezoProtocolCard: React.FC<{ wallet: WalletState; chain: MezoChainC
       ) : q.isError ? (
         <p role="alert" className="text-xs text-amber-700 dark:text-amber-400">Mezo protocol data could not be read from the network. Nothing is shown rather than a guess.</p>
       ) : snap?.trove && params && price ? (
-        <TroveView trove={snap.trove} params={params} price={price} />
+        <TroveView trove={snap.trove} params={params} />
       ) : snap && oracle?.status !== 'ok' ? (
         <p className="text-xs text-[#777777]">Trove health needs a fresh oracle price; it will refresh automatically.</p>
       ) : null}
@@ -149,7 +149,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function TroveView({ trove, params, price }: { trove: TroveState; params: ProtocolParams; price: bigint }) {
+function TroveView({ trove, params }: { trove: TroveState; params: ProtocolParams }) {
   if (trove.status === 'none') {
     return (
       <div className="p-4 rounded-2xl border border-dashed border-[#E2E2E0] dark:border-[#26262B] text-xs text-[#555555] dark:text-[#A0A0A0] flex gap-2">

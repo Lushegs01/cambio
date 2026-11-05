@@ -51,6 +51,8 @@ export function useWalletBalances(address: string | null | undefined, chainId: n
         musd as Parameters<typeof toBalanceState>[2]
       ),
     }),
+    // The query objects are new on every render; depend on the fields that change the result.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [connected, chain, native.data, native.status, native.error, native.dataUpdatedAt, musd.data, musd.status, musd.error, musd.dataUpdatedAt]
   );
 

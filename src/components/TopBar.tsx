@@ -8,8 +8,7 @@ import {
   LogOut, 
   ChevronDown, 
   Loader2, 
-  RefreshCw,
-  Bell
+  RefreshCw
 } from 'lucide-react';
 import { NavItemKey, WalletState, NotificationItem } from '../types';
 import { shortenAddress, getExplorerAddressUrl } from '../utils/format';
@@ -44,13 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onDisconnectWallet,
   onOpenNetworks,
   onOpenMobileMenu,
-  notifications,
-  onMarkNotificationsRead,
-  onNavigateHome,
-  onNavigate,
   onOpenCreateUsername,
-  dataMode = 'real',
-  onToggleDataMode,
   onOpenProfile,
   isProfileOpen = false,
 }) => {

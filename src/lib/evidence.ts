@@ -264,7 +264,7 @@ export async function fetchEvidence(client: EvidenceClient, hash: Hex, retryDela
     const name = (err as { name?: string }).name ?? '';
     return { ok: false, reason: /NotFound/i.test(name) ? 'Transaction or receipt not found on this network (yet)' : 'RPC could not return the transaction and receipt' };
   }
-  let blockTimestampMs: number | null = null;
+  let blockTimestampMs: number | null;
   try {
     blockTimestampMs = Number((await client.getBlock({ blockNumber: receipt.blockNumber })).timestamp) * 1000;
   } catch {

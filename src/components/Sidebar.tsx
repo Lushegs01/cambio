@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { 
   LayoutDashboard, 
   Clock, 
@@ -41,12 +41,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigateHome,
   wallet,
   onConnectWallet,
-  onDisconnectWallet,
   onCloseMobile,
   isMobile = false,
   notifications = [],
-  onMarkNotificationsRead,
-  onOpenCreateUsername,
   onOpenProfile,
 }) => {
   const { formatTokenFiat } = useCurrency();

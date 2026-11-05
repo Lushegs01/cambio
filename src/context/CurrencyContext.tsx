@@ -8,7 +8,6 @@ import { FiatCurrencyCode, SupportedCurrency } from '../types';
 import {
   SUPPORTED_CURRENCIES,
   CURRENCY_MAP,
-  DEFAULT_CURRENCY,
   fetchLiveFxRates,
   formatFiatValue,
   calculateTokenFiatEstimate,

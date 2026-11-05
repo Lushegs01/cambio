@@ -73,7 +73,9 @@ export function useActivity(address: Address | null, chain: MezoChainConfig | nu
   useEffect(() => {
     setResult(EMPTY);
     load();
-    return () => { ++seq.current; };
+    // Invalidate in-flight reads from this effect run (seq is a counter, not a DOM ref).
+    const counter = seq;
+    return () => { ++counter.current; };
   }, [load]);
 
   // Poll while anything is unresolved, so pending transactions settle on screen without a reload.
