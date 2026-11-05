@@ -48,7 +48,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   } finally {
     clearTimeout(timer);
   }
-  let body: any = null;
+  let body: any;
   try {
     body = await res.json();
   } catch {

@@ -34,13 +34,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
   onClose,
   wallet,
-  dataMode,
-  onToggleDataMode,
   onDisconnectWallet,
-  onOpenNetworks,
   onOpenCreateUsername,
-  transactionCount = 0,
-  paymentRequestCount = 0,
 }) => {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedUsername, setCopiedUsername] = useState(false);

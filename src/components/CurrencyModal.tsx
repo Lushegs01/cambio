@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { X, Search, Check, RefreshCw, AlertCircle, Globe } from 'lucide-react';
+import { X, Search, Check, RefreshCw, Globe } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
-import { SupportedCurrency, FiatCurrencyCode } from '../types';
+import { SupportedCurrency } from '../types';
 
 interface CurrencyModalProps {
   isOpen: boolean;
@@ -20,7 +20,6 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({ isOpen, onClose })
     supportedCurrencies,
     rateStatus,
     lastUpdated,
-    rateSource,
     refreshRates,
     isRefreshing,
     errorMessage,
@@ -65,13 +64,13 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({ isOpen, onClose })
   }, [supportedCurrencies, searchQuery]);
 
   // Format last updated time
-  const formattedLastUpdated = useMemo(() => {
+  const formattedLastUpdated = (() => {
     if (!lastUpdated) return 'Pending update';
     const seconds = Math.max(0, Math.floor((Date.now() - lastUpdated) / 1000));
     if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
     return `${minutes}m ago`;
-  }, [lastUpdated, isRefreshing]);
+  })();
 
   if (!isOpen) return null;
 

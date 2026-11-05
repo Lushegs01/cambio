@@ -51,8 +51,10 @@ export function useSwapQuote(chain: MezoChainConfig | null, inSym: SwapSymbol, o
     setError(null);
     const t = setTimeout(refresh, 400);
     const i = setInterval(() => document.visibilityState === 'visible' && refresh(), REFRESH_MS);
+    // Invalidate in-flight reads from this effect run (seq is a counter, not a DOM ref).
+    const counter = seq;
     return () => {
-      ++seq.current;
+      ++counter.current;
       clearTimeout(t);
       clearInterval(i);
     };

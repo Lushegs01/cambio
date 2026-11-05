@@ -1,0 +1,8 @@
+{
+  "note": "Copy to pilot/participants.json (git-ignored). List ONLY merchants who signed the pilot consent form (docs/USER_RESEARCH.md). Addresses are public on-chain; labels stay local.",
+  "registry": "https://cambio-five.vercel.app",
+  "since": "2026-11-05T00:00:00Z",
+  "merchants": [
+    { "label": "merchant-01", "address": "0x0000000000000000000000000000000000000000" }
+  ]
+}

@@ -34,6 +34,22 @@ export interface PoolConfig {
   stable: boolean;
 }
 
+/**
+ * MUSD protocol (Liquity-style CDP) contracts. Addresses are the proxies from the official
+ * mezo-org/musd repository, solidity/artifacts/deployments/{matsnet,mainnet} at commit
+ * da7888a10949c8a5d3f884454cec8978cfa87e48 ("matsnet" is Mezo Testnet: its MUSD.json address equals
+ * the testnet MUSD token above). Each was checked on 2026-11-05 with live eth_calls (npm run verify:chain).
+ */
+export interface MusdProtocolConfig {
+  /** fetchPrice() view → BTC/USD scaled to 18 decimals; reverts when the oracle round is older than 60 s. */
+  priceFeed: Address;
+  troveManager: Address;
+  borrowerOperations: Address;
+  interestRateManager: Address;
+  hintHelpers: Address;
+  sortedTroves: Address;
+}
+
 export interface MezoChainConfig {
   key: MezoNetworkKey;
   chainId: number;
@@ -48,9 +64,13 @@ export interface MezoChainConfig {
   router: Address;
   poolFactory: Address;
   pools: readonly PoolConfig[];
+  musdProtocol: MusdProtocolConfig;
+  /** Canonical Multicall3 (bytecode present on both Mezo networks, checked by npm run verify:chain). Read batching only. */
+  multicall3: Address;
 }
 
 const BTC_PRECOMPILE: Address = '0x7b7C000000000000000000000000000000000000';
+const MULTICALL3: Address = '0xcA11bde05977b3631167028862bE2a173976CA11';
 
 export const MEZO_TESTNET: MezoChainConfig = {
   key: 'testnet',
@@ -74,6 +94,15 @@ export const MEZO_TESTNET: MezoChainConfig = {
     { address: '0x525F049A4494dA0a6c87E3C4df55f9929765Dc3e', tokenA: 'MUSD', tokenB: 'mUSDC', stable: true },
     { address: '0x27414B76CF00E24ed087adb56E26bAeEEe93494e', tokenA: 'MUSD', tokenB: 'mUSDT', stable: true },
   ],
+  musdProtocol: {
+    priceFeed: '0x86bCF0841622a5dAC14A313a15f96A95421b9366',
+    troveManager: '0xE47c80e8c23f6B4A1aE41c34837a0599D5D16bb0',
+    borrowerOperations: '0xCdF7028ceAB81fA0C6971208e83fa7872994beE5',
+    interestRateManager: '0xD4D6c36A592A2c5e86035A6bca1d57747a567f37',
+    hintHelpers: '0x4e4cBA3779d56386ED43631b4dCD6d8EacEcBCF6',
+    sortedTroves: '0x722E4D24FD6Ff8b0AC679450F3D91294607268fA',
+  },
+  multicall3: MULTICALL3,
 };
 
 export const MEZO_MAINNET: MezoChainConfig = {
@@ -98,6 +127,15 @@ export const MEZO_MAINNET: MezoChainConfig = {
     { address: '0xEd812AEc0Fecc8fD882Ac3eccC43f3aA80A6c356', tokenA: 'MUSD', tokenB: 'mUSDC', stable: true },
     { address: '0x10906a9E9215939561597b4C8e4b98F93c02031A', tokenA: 'MUSD', tokenB: 'mUSDT', stable: true },
   ],
+  musdProtocol: {
+    priceFeed: '0xc5aC5A8892230E0A3e1c473881A2de7353fFcA88',
+    troveManager: '0x94AfB503dBca74aC3E4929BACEeDfCe19B93c193',
+    borrowerOperations: '0x44b1bac67dDA612a41a58AAf779143B181dEe031',
+    interestRateManager: '0x4a453700d157717Fe02fB62E7700ED7845048285',
+    hintHelpers: '0xD267b3bE2514375A075fd03C3D9CBa6b95317DC3',
+    sortedTroves: '0x8C5DB4C62BF29c1C4564390d10c20a47E0b2749f',
+  },
+  multicall3: MULTICALL3,
 };
 
 const ALL_CHAINS: readonly MezoChainConfig[] = [MEZO_TESTNET, MEZO_MAINNET];

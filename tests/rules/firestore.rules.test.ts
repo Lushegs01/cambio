@@ -82,4 +82,16 @@ describe('server-only and legacy collections', () => {
     await assertFails(setDoc(doc(anon(), 'usernames/alice'), { username: 'alice', ownerAddress: MALLORY, createdAt: 1 }));
     await assertFails(setDoc(doc(anon(), `wallets/${MALLORY}`), { walletAddress: MALLORY, username: 'alice', updatedAt: 1 }));
   });
+
+  it('never exposes invoices, merchant sessions or sign-in challenges to browser clients', async () => {
+    for (const db of [anon(), signedIn(ALICE)]) {
+      await assertFails(getDoc(doc(db, `invoices/${ALICE}_0x00000000000000000000000000000001`)));
+      await assertFails(getDocs(collection(db, 'invoices')));
+      await assertFails(setDoc(doc(db, `invoices/${ALICE}_0x00000000000000000000000000000001`), { settlement: { txHash: '0xfake' } }));
+      await assertFails(getDoc(doc(db, `invoice_owners/${ALICE}`)));
+      await assertFails(getDocs(collection(db, 'merchant_sessions')));
+      await assertFails(getDoc(doc(db, 'merchant_challenges/abc123nonce')));
+      await assertFails(setDoc(doc(db, 'merchant_sessions/forged'), { address: ALICE, expiresAt: 9e15 }));
+    }
+  });
 });

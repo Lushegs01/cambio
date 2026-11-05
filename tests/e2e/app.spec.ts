@@ -5,9 +5,10 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { buildPaymentRequest, encodePaymentLink, typedDataFor } from '../../src/lib/paymentRequest';
+import { createPublicClient, decodeFunctionData, erc20Abi, http } from 'viem';
+import { buildPaymentRequest, encodePaymentLink, expectedPaymentCalldata, typedDataFor } from '../../src/lib/paymentRequest';
 import { MEZO_TESTNET } from '../../src/config/chains';
-import { connectTestWallet, dismissUsernamePrompt, installTestWallet } from './testWallet';
+import { connectTestWallet, dismissUsernamePrompt, installTestWallet, sentTransactions } from './testWallet';
 
 /** A public Mezo Testnet pool contract that holds MUSD and BTC. Used read-only ("watch" mode); no key exists for it here. */
 const FUNDED_WATCH_ADDRESS = MEZO_TESTNET.pools[0].address;
@@ -120,7 +121,7 @@ test('a declined signature does not claim a username', async ({ page, request })
 });
 
 test('a signed request opened in a separate session runs the real on-chain preflight, then respects a wallet rejection', async ({ browser, baseURL }) => {
-  const { url } = await signedLink(baseURL!);
+  const { url, req } = await signedLink(baseURL!);
   const ctx = await browser.newContext({ baseURL });
   const page = await ctx.newPage();
   await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
@@ -138,6 +139,46 @@ test('a signed request opened in a separate session runs the real on-chain prefl
   await page.getByRole('button', { name: /confirm in wallet/i }).click();
   await expect(page.getByText('Cancelled in wallet')).toBeVisible();
   await expect(page.getByText(/nothing was sent/i)).toBeVisible();
+  // The wallet was asked to sign exactly MUSD.transfer(recipient, amount) ‖ "CMB2" ‖ request id.
+  // Without this suffix a payment cannot be proven to settle the signed request.
+  const sent = await sentTransactions(page);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].method).toBe('eth_sendTransaction');
+  expect(sent[0].params[0].to?.toLowerCase()).toBe(MEZO_TESTNET.tokens.MUSD.address.toLowerCase());
+  expect(sent[0].params[0].data?.toLowerCase()).toBe(expectedPaymentCalldata(req).toLowerCase());
+  expect(sent[0].params[0].data?.toLowerCase()).toContain(`434d4232${req.id.slice(2).toLowerCase()}`);
+  await ctx.close();
+});
+
+test('Fund & Pay: a request larger than the MUSD balance offers an exact BTC swap and asks the wallet for an exact approval', async ({ browser, baseURL }) => {
+  const client = createPublicClient({ transport: http(MEZO_TESTNET.rpcUrls[0]) });
+  const musd = await client.readContract({ address: MEZO_TESTNET.tokens.MUSD.address, abi: erc20Abi, functionName: 'balanceOf', args: [FUNDED_WATCH_ADDRESS] });
+  const { url } = await signedLink(baseURL!, { amount: musd + 5n * 10n ** 18n });
+  const ctx = await browser.newContext({ baseURL });
+  const page = await ctx.newPage();
+  await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
+  await page.goto(url);
+  await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
+  await connectTestWallet(page);
+  await dismissUsernamePrompt(page);
+  await expect(page.getByText('Fund this payment with BTC')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: /add musd above to pay this request/i })).toBeDisabled();
+  const swap = page.getByRole('button', { name: /^swap [\d.]+ btc for musd$/i });
+  await expect(swap).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/router-enforced/)).toBeVisible();
+  await swap.click();
+  await expect(page.getByText('Cancelled in wallet')).toBeVisible({ timeout: 30_000 });
+  // The first wallet prompt is an exact-amount BTC approval for the Mezo Router, never an unlimited one.
+  const sent = await sentTransactions(page);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].params[0].to?.toLowerCase()).toBe(MEZO_TESTNET.tokens.BTC.address.toLowerCase());
+  const approve = decodeFunctionData({ abi: erc20Abi, data: sent[0].params[0].data as `0x${string}` });
+  expect(approve.functionName).toBe('approve');
+  expect((approve.args[0] as string).toLowerCase()).toBe(MEZO_TESTNET.router.toLowerCase());
+  expect(approve.args[1]).toBeGreaterThan(0n);
+  expect(approve.args[1]).toBeLessThan(10n ** 18n);
+  // The signed request is still on screen and still unpaid.
+  await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
   await ctx.close();
 });
 
@@ -270,6 +311,35 @@ test('recipient creates a signed request through its real wallet signature and o
   await expect(page.getByText('Signed request', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^preview$/i }).click();
   await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
+});
+
+test('a signed invoice is stored server-side and recovered on another device after a wallet sign-in', async ({ browser, baseURL }) => {
+  const key = generatePrivateKey();
+  const memo = `Pilot invoice ${Date.now()}`;
+  const deviceA = await browser.newContext({ baseURL });
+  const a = await deviceA.newPage();
+  await installTestWallet(a, { privateKey: key });
+  await a.goto('/app/request'); await connectTestWallet(a); await dismissUsernamePrompt(a);
+  await a.getByLabel(/amount/i).first().fill('12.5');
+  await a.getByLabel(/note/i).fill(memo);
+  await a.getByRole('button', { name: /sign & create request/i }).click();
+  await expect(a.getByText('Saved to the invoice registry')).toBeVisible();
+  await deviceA.close();
+
+  // A different browser profile: nothing in local storage. Listing needs a wallet sign-in.
+  const deviceB = await browser.newContext({ baseURL });
+  const b = await deviceB.newPage();
+  await installTestWallet(b, { privateKey: key });
+  await b.goto('/app/request'); await connectTestWallet(b); await dismissUsernamePrompt(b);
+  await expect(b.getByText(memo)).toHaveCount(0);
+  await b.getByRole('button', { name: /sign in to sync across devices/i }).click();
+  await expect(b.getByText('Synced with the invoice registry')).toBeVisible();
+  await expect(b.getByText(memo)).toBeVisible();
+  await expect(b.getByText('12.50 MUSD').first()).toBeVisible();
+  await expect(b.getByText('Awaiting payment').first()).toBeVisible();
+  // Totals count only verified payments.
+  await expect(b.getByText('Paid (verified)')).toBeVisible();
+  await deviceB.close();
 });
 
 test('empty testnet pool is unavailable and quotes are labeled as test liquidity', async ({ page }) => {

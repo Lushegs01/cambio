@@ -24,9 +24,13 @@ import { IdentityService } from './identity/service.js';
 import { MemoryIdentityStore } from './identity/memoryStore.js';
 import type { IdentityStore } from './identity/store.js';
 import type { SharedRateLimitStore } from './rateLimit.js';
+import { InvoiceService } from './invoices/service.js';
+import { MemoryInvoiceStore } from './invoices/memoryStore.js';
 
 export interface IdentityBootstrap {
   identity: IdentityService | null;
+  /** Merchant invoices share the identity backend (same Firestore database or SQLite file). */
+  invoices?: InvoiceService | null;
   error?: string;
   store?: IdentityStore['kind'];
   rateLimitStore?: SharedRateLimitStore;
@@ -69,6 +73,16 @@ export async function createFirestoreStore(env: NodeJS.ProcessEnv) {
   return new FirestoreIdentityStore(db, !env.FIRESTORE_EMULATOR_HOST);
 }
 
+async function createFirestoreInvoiceService(store: Awaited<ReturnType<typeof createFirestoreStore>>, env: NodeJS.ProcessEnv) {
+  const { FirestoreInvoiceStore } = await import('./invoices/firestoreStore.js');
+  return new InvoiceService({ store: new FirestoreInvoiceStore(store.database, !env.FIRESTORE_EMULATOR_HOST), minConfirmations: confirmations(env) });
+}
+
+function confirmations(env: NodeJS.ProcessEnv): number {
+  const n = Number(env.INVOICE_MIN_CONFIRMATIONS || 1);
+  return Number.isSafeInteger(n) && n >= 1 && n <= 100 ? n : 1;
+}
+
 export async function bootstrapIdentity(env: NodeJS.ProcessEnv = process.env, mode: 'production' | 'development' = 'production'): Promise<IdentityBootstrap> {
   const hasFirestore = !!(env.FIRESTORE_EMULATOR_HOST || env.GOOGLE_APPLICATION_CREDENTIALS || env.FIREBASE_SERVICE_ACCOUNT_JSON || env.K_SERVICE);
   const requested = env.IDENTITY_STORE || (mode === 'production' || hasFirestore ? 'firestore' : 'memory');
@@ -82,7 +96,15 @@ export async function bootstrapIdentity(env: NodeJS.ProcessEnv = process.env, mo
       const { SqliteIdentityStore } = await import('./identity/sqliteStore.js');
       const store = new SqliteIdentityStore(env.IDENTITY_DATABASE_PATH);
       await store.ping();
-      return { identity: new IdentityService({ store }), store: 'sqlite', rateLimitStore: store, close: () => store.close() };
+      const { SqliteInvoiceStore } = await import('./invoices/sqliteStore.js');
+      const invoiceStore = new SqliteInvoiceStore(env.IDENTITY_DATABASE_PATH);
+      return {
+        identity: new IdentityService({ store }),
+        invoices: new InvoiceService({ store: invoiceStore, minConfirmations: confirmations(env) }),
+        store: 'sqlite',
+        rateLimitStore: store,
+        close: () => { invoiceStore.close(); store.close(); },
+      };
     } catch {
       console.error('[identity] SQLite initialization failed; check the database path, permissions and schema version.');
       return { identity: null, error: 'SQLite identity store could not be initialised.' };
@@ -94,14 +116,14 @@ export async function bootstrapIdentity(env: NodeJS.ProcessEnv = process.env, mo
       return { identity: null, error: 'IDENTITY_STORE=memory is not allowed in production (set ALLOW_NON_DURABLE_IDENTITY=true to override).' };
     }
     console.warn('[identity] Using the in-memory store: usernames are NOT durable and NOT shared across instances.');
-    return { identity: new IdentityService({ store: new MemoryIdentityStore() }), store: 'memory' };
+    return { identity: new IdentityService({ store: new MemoryIdentityStore() }), invoices: new InvoiceService({ store: new MemoryInvoiceStore(), minConfirmations: confirmations(env) }), store: 'memory' };
   }
 
   if (requested !== 'firestore') return { identity: null, error: `Unknown IDENTITY_STORE "${requested}"` };
 
   try {
     const store = await createFirestoreStore(env);
-    return { identity: new IdentityService({ store }), store: 'firestore', rateLimitStore: store };
+    return { identity: new IdentityService({ store }), invoices: await createFirestoreInvoiceService(store, env), store: 'firestore', rateLimitStore: store };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[identity] Firestore store could not be initialised:', message);

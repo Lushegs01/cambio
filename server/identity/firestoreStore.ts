@@ -73,6 +73,11 @@ export class FirestoreIdentityStore implements IdentityStore {
   readonly kind = 'firestore' as const;
   constructor(private readonly db: Firestore, readonly durable = true) {}
 
+  /** The same database handle, so invoices share the identity deployment's project and named database. */
+  get database(): Firestore {
+    return this.db;
+  }
+
   async consume(key: string, max: number, windowMs: number, now: number) {
     const ref = this.db.collection('identity_rate_limits').doc(createHash('sha256').update(key).digest('hex'));
     return guard(() => this.db.runTransaction(async (tx) => {

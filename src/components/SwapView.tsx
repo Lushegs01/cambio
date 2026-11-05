@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { ArrowUpDown, Settings2, Wallet, RefreshCw, AlertTriangle, ExternalLink, Loader2, X, Info } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import type { Address } from 'viem';
@@ -124,7 +124,15 @@ export const SwapView: React.FC<SwapViewProps> = ({ wallet, onConnectWallet, onS
     return `1 ${q.tokenIn.symbol} ≈ ${formatTokenDisplay(perUnit, q.tokenOut.decimals, { maxFractionDigits: q.tokenOut.symbol === 'BTC' ? 8 : 4 })} ${q.tokenOut.symbol}`;
   };
 
-  useEffect(() => { if (!exec.busy) { setReviewing(null); exec.reset(); } }, [wallet.address, wallet.chainId]);
+  // Reset a reviewed quote when the wallet or network changes, unless a transaction is in flight.
+  const execRef = useRef(exec);
+  execRef.current = exec;
+  useEffect(() => {
+    if (!execRef.current.busy) {
+      setReviewing(null);
+      execRef.current.reset();
+    }
+  }, [wallet.address, wallet.chainId]);
 
   const canReview =
     !isDemo && wallet.isConnected && !!chain && !!quote && !expired && !insufficient && !severeImpact && !quoteLoading && !!wallet.address;

@@ -12,8 +12,8 @@
  */
 
 import type { Address, Hex } from 'viem';
-import { ledgerReceiptStatus, type ReceiptWithLogs } from './receiptEvidence';
-import type { TxErrorCode } from './txErrors';
+import { ledgerReceiptStatus, type ReceiptWithLogs } from './receiptEvidence.js';
+import type { TxErrorCode } from './txErrors.js';
 
 export interface ReceiptSummary {
   status: 'success' | 'reverted';

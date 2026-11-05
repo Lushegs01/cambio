@@ -7,15 +7,15 @@
  */
 
 import { encodeFunctionData, getAddress, isAddress, type Address, type Hex } from 'viem';
-import { erc20Abi } from '../config/abis';
-import type { MezoChainConfig } from '../config/chains';
-import { classifyTxError, TxPreflightError } from './txErrors';
-import { formatTokenDisplay } from './amounts';
-import { phaseFromReceipt, summarizeReceipt, type LedgerEntry, type LedgerPatch, type ReceiptLike, type TxPhase } from './transactions';
+import { erc20Abi } from '../config/abis.js';
+import type { MezoChainConfig } from '../config/chains.js';
+import { classifyTxError, TxPreflightError } from './txErrors.js';
+import { formatTokenDisplay } from './amounts.js';
+import { phaseFromReceipt, summarizeReceipt, type LedgerEntry, type LedgerPatch, type TxPhase } from './transactions.js';
 
-export type { ReceiptWithLogs } from './receiptEvidence';
-import { receiptHasTransfer, type ReceiptWithLogs } from './receiptEvidence';
-export { receiptHasTransfer } from './receiptEvidence';
+export type { ReceiptWithLogs } from './receiptEvidence.js';
+import { receiptHasTransfer, type ReceiptWithLogs } from './receiptEvidence.js';
+export { receiptHasTransfer } from './receiptEvidence.js';
 
 export interface TransferDeps {
   getConnection(): { address?: Address; chainId?: number };
@@ -188,7 +188,7 @@ export async function executeMusdTransfer(
     });
   }
 
-  let blockTimestamp: number | null = null;
+  let blockTimestamp: number | null;
   try {
     blockTimestamp = await deps.getBlockTimestamp({ chainId: p.chain.chainId, blockNumber: receipt.blockNumber });
   } catch {

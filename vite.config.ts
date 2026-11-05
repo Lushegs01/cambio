@@ -14,8 +14,8 @@ function cambioApiDevPlugin(): Plugin {
     async configureServer(server) {
       const { createApiApp } = await import('./server/app');
       const { bootstrapIdentity } = await import('./server/bootstrap');
-      const { identity, error, rateLimitStore } = await bootstrapIdentity(process.env, 'development');
-      const api = createApiApp({ identity, identityInitError: error, rateLimitStore });
+      const { identity, invoices, error, rateLimitStore } = await bootstrapIdentity(process.env, 'development');
+      const api = createApiApp({ identity, invoices, identityInitError: error, rateLimitStore });
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith('/api/')) return next();
         api(req as never, res as never, next);

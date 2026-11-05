@@ -21,6 +21,13 @@ const router = parseAbi([
   'function getAmountsOut(uint256 amountIn, Route[] routes) view returns (uint256[] amounts)',
 ]);
 const factory = parseAbi(['function getFee(address pool, bool _stable) view returns (uint256)']);
+const protocol = parseAbi([
+  'function fetchPrice() view returns (uint256)',
+  'function MCR() view returns (uint256)',
+  'function CCR() view returns (uint256)',
+  'function minNetDebt() view returns (uint256)',
+  'function interestRate() view returns (uint16)',
+]);
 
 let failures = 0;
 const ok = (msg: string) => console.log(`  ✓ ${msg}`);
@@ -91,6 +98,33 @@ async function verify(chain: MezoChainConfig) {
     } catch (e) {
       bad(`Pool ${p.tokenA}/${p.tokenB} ${p.address}: ${(e as Error).message.split('\n')[0]}`);
     }
+  }
+
+  // MUSD protocol contracts (official mezo-org/musd deployment artifacts).
+  const p = chain.musdProtocol;
+  try {
+    const price = await c.readContract({ address: p.priceFeed, abi: protocol, functionName: 'fetchPrice' });
+    price > 0n ? ok(`PriceFeed ${p.priceFeed} fetchPrice = ${price} (18 decimals)`) : bad(`PriceFeed returned ${price}`);
+  } catch (e) {
+    const msg = (e as Error).message;
+    /stale/i.test(msg) ? console.log(`  ! PriceFeed ${p.priceFeed} reverted as stale; the app reports this instead of a price.`) : bad(`PriceFeed ${p.priceFeed}: ${msg.split('\n')[0]}`);
+  }
+  try {
+    const [mcr, ccr] = await Promise.all([
+      c.readContract({ address: p.troveManager, abi: protocol, functionName: 'MCR' }),
+      c.readContract({ address: p.troveManager, abi: protocol, functionName: 'CCR' }),
+    ]);
+    mcr === 11n * 10n ** 17n && ccr === 15n * 10n ** 17n ? ok(`TroveManager ${p.troveManager} MCR 110% CCR 150%`) : bad(`TroveManager MCR ${mcr} CCR ${ccr}`);
+    const minDebt = await c.readContract({ address: p.borrowerOperations, abi: protocol, functionName: 'minNetDebt' });
+    minDebt > 0n ? ok(`BorrowerOperations ${p.borrowerOperations} minNetDebt ${minDebt}`) : bad('BorrowerOperations minNetDebt is zero');
+    const rate = await c.readContract({ address: p.interestRateManager, abi: protocol, functionName: 'interestRate' });
+    ok(`InterestRateManager ${p.interestRateManager} interestRate ${rate} bps`);
+    for (const [name, addr] of [['HintHelpers', p.hintHelpers], ['SortedTroves', p.sortedTroves], ['Multicall3', chain.multicall3]] as const) {
+      const code = await c.getCode({ address: addr });
+      code && code !== '0x' ? ok(`${name} ${addr} has bytecode`) : bad(`${name} ${addr} has no bytecode`);
+    }
+  } catch (e) {
+    bad(`MUSD protocol contracts: ${(e as Error).message.split('\n')[0]}`);
   }
 
   // The exact calldata Cambio sends to pay a signed request: transfer(to, amount) + "CMB2" + 16-byte id.

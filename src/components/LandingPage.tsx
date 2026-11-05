@@ -19,7 +19,6 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({
   wallet,
   onConnectWallet,
-  onDisconnectWallet,
   onExplore,
   connectionError,
   onDismissError,
@@ -87,19 +86,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="lg:col-span-7 flex flex-col justify-center space-y-5 lg:space-y-6 order-1 relative z-10 self-center my-auto">
             {/* Main Headline */}
             <div className="animate-fade-in-up">
+              <span className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[11px] font-semibold uppercase tracking-wider">
+                Live on Mezo Testnet · non-custodial
+              </span>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-[54px] font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] leading-[1.09] font-sans">
-                Money moves simpler.
+                Get paid in MUSD.
                 <br />
                 <span className="text-[#777777] dark:text-[#A0A0A0]">
-                  Mezo payments reimagined.
+                  Prove it on-chain.
                 </span>
               </h1>
             </div>
 
             {/* Supporting Description */}
             <p className="text-sm sm:text-base lg:text-lg text-black dark:text-[#A0A0A0] leading-relaxed font-sans max-w-xl animate-fade-in-up animation-delay-150">
-              Meet a better way to move MUSD. Cambio brings sending, receiving, and payment tracking together in one clean, effortless interface built for Mezo.
+              Send an invoice signed by your wallet. Your customer pays from any EVM wallet, swapping BTC for MUSD on Mezo first if they are short, and you get a settlement proof anyone can check.
             </p>
+            <ul className="flex flex-wrap gap-2 text-[11px] sm:text-xs font-medium text-[#555555] dark:text-[#A0A0A0] animate-fade-in-up animation-delay-150" aria-label="What Cambio verifies">
+              {['EIP-712 signed invoices', 'Verified @usernames', 'BTC → MUSD Fund & Pay', 'Mezo oracle & trove health', 'On-chain settlement proof'].map((t) => (
+                <li key={t} className="px-2.5 py-1 rounded-lg border border-[#E2E2E0] dark:border-[#26262B] bg-[#FFFFFF]/70 dark:bg-[#141416]/70">{t}</li>
+              ))}
+            </ul>
 
             {/* Both Call-To-Action Buttons */}
             <div className="pt-1 sm:pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 animate-fade-in-up animation-delay-300">
@@ -144,7 +151,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               <img
                 src={mockupImage}
-                alt="Cambio Mobile App Mockup"
+                alt="A signed Cambio MUSD payment request on a phone, verified as signed by the recipient’s wallet"
                 className="relative z-10 w-auto max-w-[364px] sm:max-w-[416px] lg:max-w-[494px] max-h-[494px] sm:max-h-[572px] lg:max-h-[min(702px,calc(100vh-80px))] h-auto object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.14)] dark:drop-shadow-[0_25px_50px_rgba(0,0,0,0.55)] select-none transition-transform duration-300 hover:scale-[1.01] origin-bottom block mb-0 animate-slide-in-right"
                 loading="eager"
               />

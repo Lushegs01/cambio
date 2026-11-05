@@ -9,17 +9,20 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { IdentityError, IdentityService, StoreUnavailableError, type OriginContext } from './identity/service.js';
 import { rateLimit, type SharedRateLimitStore } from './rateLimit.js';
+import { InvoiceError, type InvoiceService } from './invoices/service.js';
 
 export interface AppOptions {
   /** Null when the identity store could not be initialised; identity routes then answer 503. */
   identity: IdentityService | null;
   identityInitError?: string;
+  /** Merchant invoice registry; null/undefined when unavailable (routes then answer 503). */
+  invoices?: InvoiceService | null;
   /** Extra origins allowed to call the API cross-origin. Same-origin requests need nothing. */
   allowedOrigins?: string[];
   trustProxy?: boolean | number | string;
   /** Canonical public origin (e.g. APP_URL). When unset, the request's own host is used for SIWE binding. */
   publicOrigin?: string;
-  rateLimits?: { lookupPerMinute?: number; mutatePerMinute?: number };
+  rateLimits?: { lookupPerMinute?: number; mutatePerMinute?: number; invoicePerMinute?: number };
   rateLimitStore?: SharedRateLimitStore;
 }
 
@@ -43,7 +46,7 @@ export function createApiApp(opts: AppOptions) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Vary', 'Origin');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     }
     if (req.method === 'OPTIONS') {
       res.status(origin && allowed.has(origin) ? 204 : 403).end();
@@ -56,6 +59,15 @@ export function createApiApp(opts: AppOptions) {
 
   const lookupLimit = rateLimit({ name: 'lookup', windowMs: 60_000, max: opts.rateLimits?.lookupPerMinute ?? 120, store: opts.rateLimitStore });
   const mutateLimit = rateLimit({ name: 'mutate', windowMs: 60_000, max: opts.rateLimits?.mutatePerMinute ?? 10, store: opts.rateLimitStore });
+  const invoiceLimit = rateLimit({ name: 'invoice', windowMs: 60_000, max: opts.rateLimits?.invoicePerMinute ?? 30, store: opts.rateLimitStore });
+
+  const requireInvoices = (_req: Request, res: Response, next: NextFunction) => {
+    if (!opts.invoices) {
+      res.status(503).json({ error: 'invoices_unavailable', message: 'The invoice registry is unavailable. Payment links still work without it.' });
+      return;
+    }
+    next();
+  };
 
   const requireIdentity = (_req: Request, res: Response, next: NextFunction) => {
     if (!opts.identity) {
@@ -88,7 +100,7 @@ export function createApiApp(opts: AppOptions) {
       }
       try {
         await opts.identity.ping();
-        res.json({ ok: true, identity: { available: true, ...opts.identity.storeInfo } });
+        res.json({ ok: true, identity: { available: true, ...opts.identity.storeInfo }, invoices: opts.invoices ? { available: true, ...opts.invoices.storeInfo } : { available: false } });
       } catch (err) {
         res.status(503).json({ ok: false, identity: { available: false, ...opts.identity.storeInfo, error: 'store unreachable' } });
       }
@@ -140,18 +152,82 @@ export function createApiApp(opts: AppOptions) {
     })
   );
 
+  // Merchant invoices (signed payment requests) and wallet sign-in for listing them.
+  app.post(
+    '/api/invoices',
+    invoiceLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      const { created, invoice } = await opts.invoices!.createInvoice(req.body ?? {});
+      res.status(created ? 201 : 200).json({ invoice });
+    })
+  );
+
+  app.get(
+    '/api/invoices',
+    lookupLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      const address = await opts.invoices!.authenticate(req.get('authorization'));
+      res.json(await opts.invoices!.listInvoices(address, { limit: req.query.limit, cursor: req.query.cursor }));
+    })
+  );
+
+  app.get(
+    '/api/invoices/:recipient/:id',
+    lookupLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      res.json({ invoice: await opts.invoices!.getInvoice(req.params.recipient, req.params.id) });
+    })
+  );
+
+  app.post(
+    '/api/invoices/:recipient/:id/settlement',
+    invoiceLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      res.json(await opts.invoices!.submitSettlement(req.params.recipient, req.params.id, req.body ?? {}));
+    })
+  );
+
+  app.post(
+    '/api/merchant/challenge',
+    mutateLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      res.json(await opts.invoices!.createChallenge(req.body ?? {}, originFor(req)));
+    })
+  );
+
+  app.post(
+    '/api/merchant/session',
+    mutateLimit,
+    requireInvoices,
+    wrap(async (req, res) => {
+      res.json(await opts.invoices!.createSession(req.body ?? {}, originFor(req)));
+    })
+  );
+
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found' });
   });
 
   // Errors never leak stack traces or internal messages.
   app.use('/api', (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof InvoiceError) {
+      res.status(err.status).json({ error: err.code, message: err.message });
+      return;
+    }
     if (err instanceof IdentityError) {
       res.status(err.status).json({ error: err.code, message: err.message });
       return;
     }
     if (err instanceof StoreUnavailableError) {
-      res.status(503).json({ error: 'identity_unavailable', message: 'The username registry is unavailable. Try again later.' });
+      const invoiceRoute = /^\/api\/(?:invoices|merchant)\b/.test(_req.originalUrl || '');
+      res.status(503).json(invoiceRoute
+        ? { error: 'invoices_unavailable', message: 'The invoice registry is unavailable. Payment links still work without it.' }
+        : { error: 'identity_unavailable', message: 'The username registry is unavailable. Try again later.' });
       return;
     }
     const e = err as { type?: string; status?: number };
