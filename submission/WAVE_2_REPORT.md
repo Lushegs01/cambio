@@ -32,7 +32,7 @@ Wave 1 baseline: commit `0961046` (2026-11-03). Wave 2 work is on branch `lusheg
 
 | Suite | Result |
 | --- | --- |
-| Unit/integration/UI (Node 24) | see tracker |
+| Unit/integration/UI (Node 24) | 250 / 250 |
 | Firestore emulator | 19 / 19 |
 | Browser e2e (production build) | 20 / 20 |
 | Live read-only | 7 / 7 |

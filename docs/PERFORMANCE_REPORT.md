@@ -37,7 +37,7 @@ Reconciliation now reads up to 10 explorer pages (500 transfers) and stops as so
 
 | Suite | Count | Duration |
 | --- | --- | --- |
-| Unit / integration / UI (`npm test`, Node 24) | see `docs/CAMBIO_10_10_IMPLEMENTATION_TRACKER.md` | ~10 s |
+| Unit / integration / UI (`npm test`, Node 24) | 250 | ~10 s |
 | Firestore emulator (`npm run test:rules`) | 19 | ~41 s |
 | Browser e2e (`npm run test:e2e`, production build) | 20 | ~1.4 min |
 | Live read-only (`npm run test:live`) | 7 | ~4 s |
