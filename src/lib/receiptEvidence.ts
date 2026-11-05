@@ -1,6 +1,6 @@
 import { decodeEventLog, type Address, type Hex, type Log } from 'viem';
-import { erc20Abi } from '../config/abis';
-import type { LedgerEntry, LedgerStatus, ReceiptLike } from './transactions';
+import { erc20Abi } from '../config/abis.js';
+import type { LedgerEntry, LedgerStatus, ReceiptLike } from './transactions.js';
 
 export interface ReceiptWithLogs extends ReceiptLike {
   logs: readonly Pick<Log, 'address' | 'topics' | 'data'>[];

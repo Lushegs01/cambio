@@ -12,11 +12,11 @@
  */
 
 import { decodeFunctionData, getAddress, isHex, type Address, type Hex } from 'viem';
-import { erc20Abi, routerAbi } from '../config/abis';
-import type { MezoChainConfig } from '../config/chains';
-import { receiptHasTransfer, receivedFromReceipt, type ReceiptWithLogs } from './receiptEvidence';
-import { REQUEST_SUFFIX_MAGIC, verifySettlement, type SignedPaymentRequest } from './paymentRequest';
-import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry';
+import { erc20Abi, routerAbi } from '../config/abis.js';
+import type { MezoChainConfig } from '../config/chains.js';
+import { receiptHasTransfer, receivedFromReceipt, type ReceiptWithLogs } from './receiptEvidence.js';
+import { REQUEST_SUFFIX_MAGIC, verifySettlement, type SignedPaymentRequest } from './paymentRequest.js';
+import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry.js';
 
 export type Verdict = 'PASS' | 'FAIL' | 'INCONCLUSIVE';
 export type ProofKind = 'musd_transfer' | 'btc_to_musd_swap' | 'signed_request_settlement';

@@ -30,7 +30,7 @@ describe('Vercel API entry point', () => {
     const temporary = mkdtempSync(path.join(cache, 'cambio-node-function-'));
     try {
       writeFileSync(path.join(temporary, 'package.json'), JSON.stringify({ type: 'module' }));
-      for (const file of globSync(['api/**/*.ts', 'server/**/*.ts', 'shared/**/*.ts', 'src/config/chains.ts'])) {
+      for (const file of globSync(['api/**/*.ts', 'server/**/*.ts', 'shared/**/*.ts', 'src/config/chains.ts', 'src/config/abis.ts', 'src/lib/**/*.ts'])) {
         const target = path.join(temporary, file.replace(/\.ts$/, '.js'));
         mkdirSync(path.dirname(target), { recursive: true });
         const compiled = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });

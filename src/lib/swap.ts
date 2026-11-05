@@ -11,12 +11,12 @@
  */
 
 import { type Address, type Hex } from 'viem';
-import { erc20Abi, poolFactoryAbi, routerAbi } from '../config/abis';
-import { findPool, type MezoChainConfig, type TokenConfig } from '../config/chains';
-import { applySlippage } from './amounts';
-import { classifyTxError, TxPreflightError } from './txErrors';
-import { summarizeReceipt, phaseFromReceipt, type LedgerEntry, type LedgerPatch, type TxPhase } from './transactions';
-import type { ReceiptWithLogs } from './musdTransfer';
+import { erc20Abi, poolFactoryAbi, routerAbi } from '../config/abis.js';
+import { findPool, type MezoChainConfig, type TokenConfig } from '../config/chains.js';
+import { applySlippage } from './amounts.js';
+import { classifyTxError, TxPreflightError } from './txErrors.js';
+import { summarizeReceipt, phaseFromReceipt, type LedgerEntry, type LedgerPatch, type TxPhase } from './transactions.js';
+import type { ReceiptWithLogs } from './musdTransfer.js';
 
 export type SwapSymbol = TokenConfig['symbol'];
 export const QUOTE_TTL_MS = 30_000;
@@ -148,8 +148,8 @@ export interface SwapDeps {
   now?(): number;
 }
 
-export { receivedFromReceipt } from './receiptEvidence';
-import { ledgerReceiptStatus, receivedFromReceipt } from './receiptEvidence';
+export { receivedFromReceipt } from './receiptEvidence.js';
+import { ledgerReceiptStatus, receivedFromReceipt } from './receiptEvidence.js';
 
 export interface SwapOutcome {
   phase: TxPhase;

@@ -23,11 +23,11 @@ import {
   type Address,
   type Hex,
 } from 'viem';
-import { erc20Abi } from '../config/abis';
-import { getChainConfig, getDefaultChain, type MezoChainConfig } from '../config/chains';
-import { parseTokenAmount } from './amounts';
-import { receiptHasTransfer, type ReceiptWithLogs } from './musdTransfer';
-import { normalizeUsername, validateUsername } from '../../shared/username';
+import { erc20Abi } from '../config/abis.js';
+import { getChainConfig, getDefaultChain, type MezoChainConfig } from '../config/chains.js';
+import { parseTokenAmount } from './amounts.js';
+import { receiptHasTransfer, type ReceiptWithLogs } from './musdTransfer.js';
+import { normalizeUsername, validateUsername } from '../../shared/username.js';
 
 export const REQUEST_VERSION = 2 as const;
 export const MAX_MEMO_LENGTH = 140;

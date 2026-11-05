@@ -8,12 +8,12 @@
  */
 
 import type { Address, Hex } from 'viem';
-import type { MezoChainConfig } from '../config/chains';
+import type { MezoChainConfig } from '../config/chains.js';
 import { parseAbiItem } from 'viem';
-import { fetchExplorerTransfersPage, RPC_LOG_WINDOW, type ExplorerPageParams, type LogsClient } from './activity';
-import { verifySettlement, type SettlementResult, type SignedPaymentRequest } from './paymentRequest';
-import type { ReceiptWithLogs } from './musdTransfer';
-import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry';
+import { fetchExplorerTransfersPage, RPC_LOG_WINDOW, type ExplorerPageParams, type LogsClient } from './activity.js';
+import { verifySettlement, type SettlementResult, type SignedPaymentRequest } from './paymentRequest.js';
+import type { ReceiptWithLogs } from './musdTransfer.js';
+import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry.js';
 
 export interface SettlementClient {
   getTransaction(a: { hash: Hex }): Promise<{ hash: Hex; from: Address; to: Address | null; input: Hex; chainId?: number }>;

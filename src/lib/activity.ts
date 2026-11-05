@@ -13,8 +13,8 @@
  */
 
 import { getAddress, isAddress, parseAbiItem, type Address, type Hex } from 'viem';
-import type { MezoChainConfig } from '../config/chains';
-import type { LedgerEntry } from './transactions';
+import type { MezoChainConfig } from '../config/chains.js';
+import type { LedgerEntry } from './transactions.js';
 
 export type ActivityStatus = 'confirmed' | 'pending' | 'reverted' | 'unknown' | 'simulated';
 export type ActivitySource = 'explorer' | 'rpc-logs' | 'this-device' | 'demo';
