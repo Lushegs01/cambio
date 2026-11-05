@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cambio — Wave 2 deck</title>
+<!-- Source for submission/CAMBIO_FINAL_PITCH_DECK.pdf. Render: npm run deck. Every screenshot is from the real production build. -->
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, 'Helvetica Neue', Arial, sans-serif; color: #111; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 1280px; height: 720px; padding: 56px 64px 48px; position: relative; overflow: hidden; page-break-after: always; background: #F5F5F3; }
+  .slide:last-child { page-break-after: auto; }
+  .kicker { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #777; font-weight: 600; }
+  h1 { font-size: 64px; line-height: 1.04; margin: 16px 0 0; letter-spacing: -.02em; }
+  h2 { font-size: 40px; line-height: 1.1; margin: 10px 0 22px; letter-spacing: -.015em; }
+  h3 { font-size: 18px; margin: 0 0 6px; }
+  p, li { font-size: 18px; line-height: 1.45; color: #333; }
+  .muted { color: #777; }
+  .grey { color: #8a8a8a; }
+  .foot { position: absolute; left: 64px; right: 64px; bottom: 22px; display: flex; justify-content: space-between; font-size: 12px; color: #999; letter-spacing: .06em; text-transform: uppercase; }
+  .row { display: flex; gap: 28px; }
+  .card { background: #fff; border: 1px solid #E2E2E0; border-radius: 20px; padding: 20px 22px; }
+  .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+  .pass { background: #DCFCE7; color: #166534; } .pend { background: #FEF3C7; color: #92400E; } .info { background: #E0F2FE; color: #075985; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #777; padding: 8px 10px; border-bottom: 1px solid #E2E2E0; }
+  td { padding: 9px 10px; border-bottom: 1px solid #EDEDEB; vertical-align: top; color: #222; }
+  code, .mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; }
+  .shot { border-radius: 16px; border: 1px solid #E2E2E0; box-shadow: 0 18px 40px rgba(0,0,0,.08); background: #fff; }
+  .big { font-size: 46px; font-weight: 800; letter-spacing: -.02em; }
+  ul { margin: 0; padding-left: 20px; } li { margin: 4px 0; }
+  .dark { background: #111; color: #fff; } .dark p, .dark li { color: #ddd; } .dark .kicker { color: #aaa; } .dark .foot { color: #777; }
+  .note { font-size: 13px; color: #8a8a8a; }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide dark">
+  <div class="kicker">Mezo Buildathon · Wave 2 · Track 2: Access &amp; Distribution</div>
+  <div class="row" style="margin-top:36px;align-items:center">
+    <div style="flex:1">
+      <h1>Cambio</h1>
+      <h1 style="font-size:44px;color:#bbb;margin-top:10px">Get paid in MUSD.<br/>Prove it on-chain.</h1>
+      <p style="margin-top:28px;max-width:540px">Wallet-signed MUSD invoices any customer can pay, even with only BTC, and settlement that anyone can verify on Mezo.</p>
+      <p style="margin-top:28px">Lushegs · solo developer<br/><span class="grey">github.com/Lushegs01/cambio · cambio-five.vercel.app · Mezo Testnet (31611)</span></p>
+    </div>
+    <img src="../screenshots/desktop-landing.png" class="shot" style="width:600px" />
+  </div>
+  <div class="foot"><span>Cambio · non-custodial · no custom contracts</span><span>1</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The payment problem</div>
+  <h2>Crypto invoicing still runs on copy-paste and screenshots</h2>
+  <div class="row">
+    <div class="card" style="flex:1"><h3>Links can be edited</h3><p>A pasted address or a payment link can be changed in transit. The payer has no way to know the merchant wrote it.</p></div>
+    <div class="card" style="flex:1"><h3>"I paid you" is a screenshot</h3><p>Merchants check explorers by hand. A payment is easy to miss, mis-attribute or double-count.</p></div>
+    <div class="card" style="flex:1"><h3>Payers hold BTC, invoices are in dollars</h3><p>A BTC holder who owes a dollar amount must leave the invoice, find a DEX, size a swap and come back.</p></div>
+  </div>
+  <p style="margin-top:28px" class="muted">MUSD is Mezo's Bitcoin-backed dollar. Cambio makes it work as an <b style="color:#111">invoice currency</b> for people who already hold BTC.</p>
+  <div class="foot"><span>Cambio · Wave 2</span><span>2</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">Who it's for</div>
+  <h2>Start narrow: people who already get paid in crypto</h2>
+  <div class="row">
+    <div class="card" style="flex:1.2">
+      <h3>Primary: crypto-paid freelancers and small studios</h3>
+      <p>They invoice international clients and want a link nobody can edit, a dollar-stable asset, proof for bookkeeping, and no custody risk.</p>
+      <h3 style="margin-top:14px">Secondary: Mezo-ecosystem merchants</h3>
+      <p>Projects, communities and events whose customers already hold MUSD or BTC on Mezo.</p>
+      <h3 style="margin-top:14px">Payers: BTC holders on Mezo</h3>
+      <p>They pay a dollar invoice without leaving it, using Fund &amp; Pay.</p>
+    </div>
+    <div class="card" style="flex:1">
+      <h3>Persona: Ada, product designer</h3>
+      <ul><li>3–8 international clients a month, $300–$3,000 per invoice</li><li>Today: pastes an address, asks for a screenshot, checks the explorer</li><li>Needs: a tamper-proof link, a trusted "paid" status, a monthly export</li></ul>
+      <p class="note" style="margin-top:16px">These are hypotheses. User research has not started. We make no claim of mass-market or regional demand, and Cambio has no fiat off-ramp.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Cambio · Wave 2</span><span>3</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">The solution</div>
+  <h2>Signed invoices · Fund &amp; Pay · verified settlement · merchant workspace</h2>
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:0.9">
+      <ul>
+        <li><b>EIP-712 signed invoices.</b> The recipient, amount, token, chain, ID and expiry are signed by the merchant's wallet; the payer verifies the signature before Pay appears.</li>
+        <li><b>Verified @usernames.</b> Each name is bound by a server-verified SIWE signature.</li>
+        <li><b>Fund &amp; Pay.</b> If the payer is short, Cambio sizes a BTC→MUSD swap for exactly the shortfall on the same page.</li>
+        <li><b>Settlement proof.</b> The payment carries the invoice ID in its calldata; anyone can re-check the receipt and the <code>Transfer</code> event.</li>
+        <li><b>Invoice registry.</b> Syncs across devices after a wallet sign-in; "paid" is only ever set by on-chain verification. Totals, filters, CSV export.</li>
+      </ul>
+    </div>
+    <img src="../screenshots/desktop-merchant-invoices.png" class="shot" style="width:560px;height:420px;object-fit:cover;object-position:top" />
+  </div>
+  <div class="foot"><span>Cambio · Wave 2 · real screenshot: test merchant key, testnet</span><span>4</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">The flagship journey (real screens)</div>
+  <h2 style="margin-bottom:14px">Invoice → fund with BTC → pay → verified</h2>
+  <div class="row" style="align-items:flex-start">
+    <img src="../screenshots/phone-signed-request.png" class="shot" style="height:500px" />
+    <img src="../screenshots/phone-fund-and-pay.png" class="shot" style="height:500px;width:250px;object-fit:cover;object-position:0 52%" />
+    <div style="flex:1">
+      <ol style="padding-left:20px">
+        <li><p>The merchant signs an invoice. It's free, and the link is saved to the registry.</p></li>
+        <li><p>The customer opens it: the signature is verified and Cambio checks the invoice is not already paid.</p></li>
+        <li><p>They're 53.85 MUSD short, so Cambio quotes 0.00068876 BTC in, with at least 53.85 MUSD out (router-enforced). The Mezo oracle value is shown alongside.</p></li>
+        <li><p>Exact approval → swap → pay. Each step is its own wallet prompt.</p></li>
+        <li><p>The server re-reads the chain and marks the invoice <b>Paid · verified</b>.</p></li>
+      </ol>
+      <p class="note">The Fund &amp; Pay screen shows the real @lushegs wallet balance (796.1477 MUSD) against an 850 MUSD test invoice. Read-only capture; nothing was broadcast.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Cambio · Wave 2</span><span>5</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Mezo-native integration</div>
+  <h2 style="margin-bottom:14px">Built on Mezo's contracts, not a generic ERC-20</h2>
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:1">
+      <table>
+        <tr><th>Mezo contract</th><th>Cambio uses it for</th></tr>
+        <tr><td>MUSD</td><td>Transfers with a calldata-bound invoice ID; <code>Transfer</code>-event proof</td></tr>
+        <tr><td>Router · PoolFactory · MUSD/BTC pool</td><td>Quotes, on-chain fees, reserve-exact Fund &amp; Pay sizing, exact-approval swaps</td></tr>
+        <tr><td><b>PriceFeed</b></td><td>BTC oracle price; a stale revert shows as stale, never as an off-chain substitute</td></tr>
+        <tr><td><b>TroveManager</b></td><td>Trove status, <code>getCurrentICR</code>, MCR/CCR, TCR, Recovery Mode</td></tr>
+        <tr><td><b>BorrowerOperations</b></td><td>Read-only <code>openTrove</code> preview: fee, minimum debt, gas compensation</td></tr>
+        <tr><td>Multicall3</td><td>17 → 5 RPC requests per refresh</td></tr>
+      </table>
+      <p class="note" style="margin-top:10px">Addresses come from the official <code>mezo-org/musd</code> deployments and are re-verified by <code>npm run verify:chain</code>. Cambio's ICR math equals a live <code>getCurrentICR</code> to the wei.</p>
+    </div>
+    <img src="../screenshots/desktop-mezo-position.png" class="shot" style="width:520px" />
+  </div>
+  <div class="foot"><span>Cambio · Wave 2 · trove shown is a public testnet trove (0xd0d4…8dCd)</span><span>6</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">On-chain evidence (Mezo Testnet)</div>
+  <h2>Re-verified from the RPC with one command</h2>
+  <table>
+    <tr><th>Proof</th><th>Transaction</th><th>What was checked</th><th>Verdict</th></tr>
+    <tr><td>MUSD transfer<br/><span class="note">10 MUSD, @solo → @lushegs</span></td><td class="mono">0x8e39d309…5065e<br/><span class="note">block 16390715</span></td><td>Targets MUSD; <code>transfer</code> calldata; success; matching <code>Transfer</code> event; sender, recipient and amount</td><td><span class="pill pass">PASS</span></td></tr>
+    <tr><td>BTC → MUSD swap<br/><span class="note">0.01 BTC → 786.1477 MUSD</span></td><td class="mono">0x4af2b0f0…33f6e<br/><span class="note">block 16382064</span></td><td>Mezo Router; BTC→MUSD route via PoolFactory; BTC into the pool; MUSD out ≥ router minimum (782.2170)</td><td><span class="pill pass">PASS</span></td></tr>
+    <tr><td>Signed-invoice settlement</td><td class="mono">not yet recorded</td><td>No transaction with Cambio's <code>CMB2</code> invoice-ID calldata exists yet. An e2e test proves the wallet is asked to sign exactly that calldata.</td><td><span class="pill pend">PENDING</span></td></tr>
+  </table>
+  <p style="margin-top:22px"><code>npm run verify:evidence</code> → PASS / FAIL / INCONCLUSIVE. Unreadable data is never reported as a pass. <span class="muted">Found and fixed along the way: the public testnet RPC returned null for 25–33% of mined receipts.</span></p>
+  <div class="foot"><span>explorer.test.mezo.org · submission/evidence/</span><span>7</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">Business model (hypotheses to validate)</div>
+  <h2>Free to get paid. Merchant Pro for running a business on it.</h2>
+  <div class="row">
+    <div class="card" style="flex:1"><h3>Personal: free</h3><p>Usernames, signed invoices, QR codes, settlement proof, Fund &amp; Pay</p></div>
+    <div class="card" style="flex:1"><h3>Merchant Pro: $9/mo in MUSD <span class="pill info">hypothesis</span></h3><p>Cross-device registry, reconciliation, CSV, duplicate-payment alerts, reminders and branded links (to build)</p></div>
+    <div class="card" style="flex:1"><h3>Volume tier (later)</h3><p>0.25% of verified volume above $2k/month <span class="note">(to test)</span></p></div>
+  </div>
+  <div class="row" style="margin-top:18px">
+    <div class="card" style="flex:1.3"><h3>How Cambio actually collects</h3><p>A non-custodial transfer pays Cambio nothing. Pro is billed with <b>Cambio's own signed invoice</b>, and the server unlocks it after a <b>verified settlement</b>, so no new contracts are needed. In-payment and routing fees would need an audited contract and are not built.</p></div>
+    <div class="card" style="flex:1"><h3>Unit economics (estimates)</h3><p>About $30/month fixed at pilot scale, about $270/month at scale. Roughly 4 Pro merchants cover the pilot and 30 cover scale. Marginal cost per invoice is under a cent.</p></div>
+  </div>
+  <div class="foot"><span>docs/BUSINESS_MODEL.md</span><span>8</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="kicker">Traction &amp; validation</div>
+  <h2>Honest status: zero users so far. The pilot is ready.</h2>
+  <div class="row">
+    <div class="card" style="flex:1"><div class="big">0</div><p>paying customers, revenue, or completed interviews. We claim none.</p></div>
+    <div class="card" style="flex:1"><div class="big">2 / 3</div><p>on-chain proofs verified (transfer, swap); signed settlement pending</p></div>
+    <div class="card" style="flex:1"><div class="big">Ready</div><p>Consent form, interview and usability scripts, and <code>pilot:metrics</code>, which counts only verifiable transactions</p></div>
+  </div>
+  <table style="margin-top:20px">
+    <tr><th>Pilot goal (next 4 weeks)</th><th>Target</th><th>Measured by</th></tr>
+    <tr><td>Consenting testnet merchants</td><td>3–5</td><td>consent forms</td></tr>
+    <tr><td>Verified signed-invoice settlements · distinct payers</td><td>≥ 30 · ≥ 15</td><td><code>npm run pilot:metrics</code> (chain-derived only)</td></tr>
+    <tr><td>Interviews · usability sessions · willing to pay ≥ $9</td><td>10 · 5 · ≥ 3</td><td>docs/USER_RESEARCH.md</td></tr>
+  </table>
+  <div class="foot"><span>Goals, not results</span><span>9</span></div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="kicker">Architecture &amp; security</div>
+  <h2 style="margin-bottom:14px">Non-custodial, composable, verified at every step</h2>
+  <div class="row">
+    <div class="card" style="flex:1.1">
+      <p class="mono" style="font-size:13px;line-height:1.55;color:#222;margin:0">React 19 · wagmi · viem  ──signs──▶  wallet<br/>  │ reads/receipts (retry on "not found")<br/>  ├──▶ Mezo RPC · Multicall3 · explorer<br/>  └──▶ /api (Express, same origin)<br/>        ├ identity: SIWE usernames<br/>        ├ invoices: signed-request registry<br/>        │   settlement = server re-reads chain<br/>        └ Firestore │ SQLite │ memory(dev)</p>
+      <p class="note" style="margin-top:10px">No custom smart contracts. No keys, no custody.</p>
+    </div>
+    <div class="card" style="flex:1">
+      <h3>Controls</h3>
+      <ul style="font-size:15px">
+        <li>Chain and account re-checked before every prompt; double-submit locks</li>
+        <li>Exact approvals, re-quote + simulate, router minimum, 30 s quotes</li>
+        <li>Status is never client-set; incomplete search = unknown, not unpaid</li>
+        <li>Invoices keyed (recipient, id); SIWE session for listing</li>
+        <li>CSP, rate limits, deny-by-default Firestore rules</li>
+      </ul>
+      <h3 style="margin-top:12px">Tests (2026-11-05)</h3>
+      <p style="font-size:15px">250 unit/integration · 19 Firestore emulator · 20 browser e2e (production build) · 7 live read-only · ESLint 0 warnings · CI on every push. <b>Not audited.</b></p>
+    </div>
+  </div>
+  <div class="foot"><span>docs/ARCHITECTURE.md · docs/SECURITY_REVIEW.md</span><span>10</span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="kicker">Differentiation</div>
+  <h2>Why Cambio, and why on Mezo</h2>
+  <table>
+    <tr><th></th><th>Wallet send + pasted address</th><th>Hosted crypto checkout</th><th>Cambio</th></tr>
+    <tr><td>Tamper-evident request</td><td>No</td><td>Hosted page</td><td><b>Merchant's EIP-712 signature, checked in the payer's browser</b></td></tr>
+    <tr><td>Proof of payment</td><td>Screenshot</td><td>Provider dashboard</td><td><b>Calldata-bound ID; anyone can verify</b></td></tr>
+    <tr><td>Pay a dollar invoice holding only BTC</td><td>Manual DEX trip</td><td>Varies</td><td><b>Fund &amp; Pay on Mezo's MUSD/BTC pool</b></td></tr>
+    <tr><td>Custody</td><td>None</td><td>Often custodial</td><td><b>Non-custodial</b></td></tr>
+    <tr><td>Mezo context</td><td>None</td><td>MUSD/Mezo support not verified by us</td><td><b>PriceFeed, trove health, borrowing preview</b></td></tr>
+  </table>
+  <p class="note" style="margin-top:14px">Comparison based on public product categories, not exhaustive testing. Cambio extends Mezo's own app into payments between people; it does not compete with borrowing or yield.</p>
+  <div class="foot"><span>Cambio · Wave 2</span><span>11</span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide dark">
+  <div class="kicker">Roadmap · solo builder</div>
+  <h2 style="color:#fff">Next: real merchants, real proofs, then mainnet</h2>
+  <div class="row">
+    <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By Dec 15</h3><p>Signed-settlement proof · redeploy · 3–5 merchant pilot with chain-derived metrics · 10 interviews</p></div>
+    <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By Feb 15</h3><p>Merchant Pro billing via signed invoices · reminders and webhooks · Telegram bot that creates signed invoices</p></div>
+    <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By May 15</h3><p>Audited checkout contract (single-use invoices, fees) · optional borrowing route · mainnet only after review</p></div>
+  </div>
+  <p style="margin-top:34px"><b style="color:#fff">Lushegs</b>, solo developer: product, design and engineering. github.com/Lushegs01</p>
+  <p class="grey">Live: cambio-five.vercel.app · Repo: github.com/Lushegs01/cambio · Track 2: Access &amp; Distribution · Mezo Testnet</p>
+  <div class="foot"><span>Not audited · testnet only · no custom contracts</span><span>12</span></div>
+</section>
+
+</body>
+</html>

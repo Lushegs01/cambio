@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Read-only clients that batch concurrent eth_calls through Multicall3. Measured on Mezo Testnet
- * (2026-11-05, median of 3): the Mezo position refresh went from 17 RPC requests / 563 ms to 5 / 394 ms,
- * and Fund & Pay sizing from 7 / 264 ms to 3 / 155 ms. Writes never go through these clients.
+ * (2026-11-05, npm run measure:rpc): the Mezo position refresh went from 17 RPC requests to 5, and Fund & Pay
+ * sizing from 7 to 3, with lower latency (docs/PERFORMANCE_REPORT.md). Writes never go through these clients.
  */
 
 import { createPublicClient, defineChain, fallback, http, type PublicClient } from 'viem';

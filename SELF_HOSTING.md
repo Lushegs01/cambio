@@ -18,8 +18,8 @@ SQLite here is for one server and a local filesystem. Do not put it on NFS/SMB, 
 ## Deploy on your server
 
 ```bash
-git clone https://github.com/CaNoN-0/Cambio.git
-cd Cambio
+git clone https://github.com/Lushegs01/cambio.git
+cd cambio
 cp deploy/selfhost.env.example .env.selfhost
 ```
 

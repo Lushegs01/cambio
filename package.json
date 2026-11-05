@@ -18,7 +18,9 @@
     "test:e2e": "playwright test",
     "verify:evidence": "tsx scripts/verify-evidence.ts",
     "test:live": "vitest run -c vitest.live.config.ts",
-    "pilot:metrics": "tsx scripts/pilot-metrics.ts"
+    "pilot:metrics": "tsx scripts/pilot-metrics.ts",
+    "measure:rpc": "tsx scripts/measure-rpc.ts",
+    "deck": "node scripts/render-deck.mjs"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.24",
