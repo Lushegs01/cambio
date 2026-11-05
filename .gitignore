@@ -20,3 +20,4 @@ playwright-report/
 firestore-debug.log
 *-debug.log
 .shots/
+pilot/participants.json
