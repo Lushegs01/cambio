@@ -119,7 +119,7 @@ async function verify(chain: MezoChainConfig) {
     minDebt > 0n ? ok(`BorrowerOperations ${p.borrowerOperations} minNetDebt ${minDebt}`) : bad('BorrowerOperations minNetDebt is zero');
     const rate = await c.readContract({ address: p.interestRateManager, abi: protocol, functionName: 'interestRate' });
     ok(`InterestRateManager ${p.interestRateManager} interestRate ${rate} bps`);
-    for (const [name, addr] of [['HintHelpers', p.hintHelpers], ['SortedTroves', p.sortedTroves]] as const) {
+    for (const [name, addr] of [['HintHelpers', p.hintHelpers], ['SortedTroves', p.sortedTroves], ['Multicall3', chain.multicall3]] as const) {
       const code = await c.getCode({ address: addr });
       code && code !== '0x' ? ok(`${name} ${addr} has bytecode`) : bad(`${name} ${addr} has no bytecode`);
     }

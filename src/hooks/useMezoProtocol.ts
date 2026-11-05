@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { Address } from 'viem';
 import type { MezoChainConfig } from '../config/chains';
 import { readOraclePrice, readProtocolParams, readTrove, type OracleReading, type ProtocolParams, type ReadClient, type TroveState } from '../lib/mezoProtocol';
-import { publicClientFor } from '../lib/wagmiDeps';
+import { batchedReadClient } from '../lib/readClient';
 
 export interface MezoProtocolSnapshot {
   oracle: OracleReading;
@@ -32,7 +32,7 @@ export function useMezoProtocol(chain: MezoChainConfig | null, owner: Address | 
   return useQuery({
     queryKey: ['mezo-protocol', chain?.chainId ?? null, owner?.toLowerCase() ?? null],
     enabled: enabled && !!chain,
-    queryFn: () => loadMezoProtocol(publicClientFor(chain!.chainId) as unknown as ReadClient, chain!, owner),
+    queryFn: () => loadMezoProtocol(batchedReadClient(chain!) as unknown as ReadClient, chain!, owner),
     refetchInterval: () => (typeof document === 'undefined' || document.visibilityState === 'visible' ? MEZO_PROTOCOL_REFRESH_MS : false),
     staleTime: 15_000,
     gcTime: 5 * 60_000,

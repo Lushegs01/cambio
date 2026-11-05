@@ -65,9 +65,12 @@ export interface MezoChainConfig {
   poolFactory: Address;
   pools: readonly PoolConfig[];
   musdProtocol: MusdProtocolConfig;
+  /** Canonical Multicall3 (bytecode present on both Mezo networks, checked by npm run verify:chain). Read batching only. */
+  multicall3: Address;
 }
 
 const BTC_PRECOMPILE: Address = '0x7b7C000000000000000000000000000000000000';
+const MULTICALL3: Address = '0xcA11bde05977b3631167028862bE2a173976CA11';
 
 export const MEZO_TESTNET: MezoChainConfig = {
   key: 'testnet',
@@ -99,6 +102,7 @@ export const MEZO_TESTNET: MezoChainConfig = {
     hintHelpers: '0x4e4cBA3779d56386ED43631b4dCD6d8EacEcBCF6',
     sortedTroves: '0x722E4D24FD6Ff8b0AC679450F3D91294607268fA',
   },
+  multicall3: MULTICALL3,
 };
 
 export const MEZO_MAINNET: MezoChainConfig = {
@@ -131,6 +135,7 @@ export const MEZO_MAINNET: MezoChainConfig = {
     hintHelpers: '0xD267b3bE2514375A075fd03C3D9CBa6b95317DC3',
     sortedTroves: '0x8C5DB4C62BF29c1C4564390d10c20a47E0b2749f',
   },
+  multicall3: MULTICALL3,
 };
 
 const ALL_CHAINS: readonly MezoChainConfig[] = [MEZO_TESTNET, MEZO_MAINNET];

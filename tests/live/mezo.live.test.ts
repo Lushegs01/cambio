@@ -70,3 +70,17 @@ describe('live Fund & Pay sizing (read-only)', () => {
     }
   });
 });
+
+describe('live Multicall3 batching (read-only)', () => {
+  it('returns the same protocol state as unbatched reads', async () => {
+    const { batchedReadClient } = await import('../../src/lib/readClient');
+    const batched = batchedReadClient(chain) as unknown as ReadClient;
+    const price = await readOraclePrice(batched, chain);
+    if (price.status !== 'ok') throw new Error(`oracle ${price.status}`);
+    const [a, b] = await Promise.all([readProtocolParams(batched, chain, price.price), readProtocolParams(read, chain, price.price)]);
+    expect(a.mcr).toBe(b.mcr);
+    expect(a.ccr).toBe(b.ccr);
+    expect(a.minNetDebt).toBe(b.minNetDebt);
+    expect(a.tcr).toBe(b.tcr);
+  });
+});

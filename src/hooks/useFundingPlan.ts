@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MezoChainConfig } from '../config/chains';
 import { FUNDING_GAS_UNITS, planFunding, type FundingPlan } from '../lib/fundAndPay';
 import { classifyTxError } from '../lib/txErrors';
-import { publicClientFor } from '../lib/wagmiDeps';
+import { batchedReadClient } from '../lib/readClient';
 
 const REFRESH_MS = 15_000;
 
@@ -29,7 +29,7 @@ export function useFundingPlan(chain: MezoChainConfig | null, need: bigint, enab
     }
     setLoading(true);
     try {
-      const client = publicClientFor(chain.chainId);
+      const client = batchedReadClient(chain);
       const [p, gasPrice] = await Promise.all([planFunding(client as never, chain, need), client.getGasPrice()]);
       if (run !== seq.current) return;
       setPlan(p);
