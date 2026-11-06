@@ -171,8 +171,10 @@ Full review and residual risks: [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.m
 - Deploy the rules and index:
 
   ```bash
-  npx firebase deploy --only firestore:rules,firestore:indexes --project <project>
+  npx firebase deploy --only firestore:rules,firestore:indexes
   ```
+
+  `.firebaserc` and `firebase.json` target project `cambio-717c1`, database `(default)`.
 
 - Add TTL policies on `identity_rate_limits.expiresAt`, `merchant_sessions.ttl` and `merchant_challenges.ttl`.
 - Check `GET /api/health`. It should report `identity.durable: true` and `invoices.available: true`.
