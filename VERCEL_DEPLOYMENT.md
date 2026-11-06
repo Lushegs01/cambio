@@ -111,8 +111,8 @@ The owning Vercel account must configure these **Production runtime** variables 
 | `IDENTITY_STORE` | `firestore` |
 | `ALLOW_NON_DURABLE_IDENTITY` | `false` |
 | `TRUST_PROXY` | `1` for Vercel's ingress |
-| `FIREBASE_PROJECT_ID` | `modified-world-h83d0`, unless deliberately using another owned project |
-| `FIRESTORE_DATABASE_ID` | `ai-studio-cambio-259bf3c8-6227-4d5b-b3e3-2b6bcc78ecc2`, unless deliberately using another existing database |
+| `FIREBASE_PROJECT_ID` | `cambio-717c1` |
+| `FIRESTORE_DATABASE_ID` | `(default)` |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Complete JSON of an authorized service account, stored as a sensitive server-only environment variable |
 
 The account must have Firestore access to the configured project/database (the documented standard role is Cloud Datastore User). Keep the existing Firestore deny-by-default client rules. The public Firebase browser API key does not authenticate the backend Admin SDK. Do not add `VITE_` to the credential variable, print its value, commit it, or paste it into an issue or chat. `GOOGLE_APPLICATION_CREDENTIALS` with an actual mounted credential file or supported Application Default Credentials remains an alternative; Vercel does not automatically inherit a Cloud Run service identity.
