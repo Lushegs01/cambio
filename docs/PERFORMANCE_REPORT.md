@@ -1,5 +1,8 @@
 # Performance report
 
+> **Superseded on 2026-11-08 by [`docs/WAVE2_PERFORMANCE_REPORT.md`](/docs/WAVE2_PERFORMANCE_REPORT.md).** Kept for history; where the two differ, the newer document is current.
+
+
 All numbers below were measured in this environment on 2026-11-05. Nothing is estimated unless marked.
 
 ## RPC load and latency (live Mezo Testnet; two separate runs, each the median of 3)

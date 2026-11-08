@@ -1,3 +1,5 @@
+> **Superseded on 2026-11-08 by [`submission/WAVE2_FINAL_READINESS.md`](/submission/WAVE2_FINAL_READINESS.md).** Kept for history; where the two differ, the newer document is current.
+
 > **Historical Wave 1 record (2026-10-26).** Superseded for Wave 2 by [docs/CAMBIO_10_10_IMPLEMENTATION_TRACKER.md](docs/CAMBIO_10_10_IMPLEMENTATION_TRACKER.md), [submission/WAVE_2_REPORT.md](submission/WAVE_2_REPORT.md) and [SUBMISSION_PACKAGE.md](SUBMISSION_PACKAGE.md). Statements below about a private repository, missing transactions and test counts were accurate on that date only. The repository is public, and a real MUSD transfer and BTC→MUSD swap are now verified.
 
 # Cambio submission readiness

@@ -82,6 +82,8 @@ export const ProofPage: React.FC<Props> = ({ route, onGoToDashboard }) => {
   const facts = outcome && 'result' in outcome ? outcome.result.facts : {};
   const paidAt = facts.blockTime ? new Date(facts.blockTime) : null;
   const late = facts.late === 'true';
+  // Only a verified settlement has a payer and a payment date. Otherwise these are just facts about the checked transaction.
+  const settled = outcome?.state === 'verified';
 
   const copy = async () => {
     if (await copyToClipboard(shareUrl)) {
@@ -148,15 +150,16 @@ export const ProofPage: React.FC<Props> = ({ route, onGoToDashboard }) => {
 
         {/* Receipt */}
         {invoice && (
-          <section className="bg-[#FFFFFF] dark:bg-[#141416] rounded-3xl border border-[#E2E2E0] dark:border-[#26262B] p-5 sm:p-7 space-y-4" aria-label="Receipt">
+          <section className="bg-[#FFFFFF] dark:bg-[#141416] rounded-3xl border border-[#E2E2E0] dark:border-[#26262B] p-5 sm:p-7 space-y-4" aria-label={settled ? 'Receipt' : 'Invoice and checked transaction'} data-testid="proof-receipt">
+            {!settled && <p className="text-[11px] font-semibold uppercase tracking-wider text-[#777777] text-center">Invoice — not a payment receipt</p>}
             <div className="text-center space-y-1">
               <div className="text-4xl font-bold font-mono tracking-tight" data-testid="proof-amount">{amount} <span className="text-base font-medium text-[#777777]">MUSD</span></div>
               <p className="text-xs text-[#777777] dark:text-[#A0A0A0]">{chain.name} · chain {chain.chainId}{chain.isTestnet ? ' · test funds, no monetary value' : ''}</p>
             </div>
             <dl className="text-xs divide-y divide-[#F0F0EE] dark:divide-[#1E1E22]">
               <Row term="Merchant">{merchantName ? <><strong>{merchantName}</strong> <span className="text-emerald-600">verified username</span><br /></> : null}<span className="font-mono break-all">{invoice.request.recipient}</span></Row>
-              {payer && <Row term="Payer">{payerName ? <><strong>{payerName}</strong><br /></> : null}<span className="font-mono break-all">{payer}</span></Row>}
-              <Row term="Date paid">{paidAt ? paidAt.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}</Row>
+              {payer && <Row term={settled ? 'Payer' : 'Transaction sender'}>{payerName ? <><strong>{payerName}</strong><br /></> : null}<span className="font-mono break-all">{payer}</span></Row>}
+              <Row term={settled ? 'Date paid' : 'Transaction time'}>{paidAt ? paidAt.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : settled ? '—' : 'Not paid by a verified transaction'}</Row>
               <Row term="Invoice created">{new Date(invoice.request.createdAt * 1000).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</Row>
               <Row term="Invoice expires">{new Date(invoice.request.expiresAt * 1000).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</Row>
               <Row term="Request reference"><span className="font-mono break-all">{invoice.request.id}</span></Row>

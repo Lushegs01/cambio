@@ -427,6 +427,10 @@ test('public proof viewer: a real plain transfer is rejected as settlement of a 
   await expect(checks.locator('li', { hasText: 'Paid to the merchant' })).toHaveAttribute('data-ok', 'false');
   await expect(checks.locator('li', { hasText: 'Payment carries this invoice’s request ID' })).toHaveAttribute('data-ok', 'false');
   await expect(page.getByTestId('proof-amount')).toContainText('10.00');
+  // A failed proof never presents the transaction as a payment.
+  await expect(page.getByTestId('proof-receipt')).toContainText('Invoice — not a payment receipt');
+  await expect(page.getByTestId('proof-receipt')).toContainText('Transaction sender');
+  await expect(page.getByTestId('proof-receipt')).not.toContainText('Date paid');
   // No wallet was ever involved, and the proof link carries no token.
   expect(page.url()).not.toMatch(/token|bearer|session/i);
 });

@@ -20,7 +20,9 @@
     "test:live": "vitest run -c vitest.live.config.ts",
     "pilot:metrics": "tsx scripts/pilot-metrics.ts",
     "measure:rpc": "tsx scripts/measure-rpc.ts",
-    "deck": "node scripts/render-deck.mjs"
+    "deck": "node scripts/render-deck.mjs",
+    "check:submission": "tsx scripts/check-submission.ts",
+    "deck:check": "node scripts/check-deck.mjs"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.24",

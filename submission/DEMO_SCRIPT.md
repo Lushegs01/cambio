@@ -1,5 +1,8 @@
 # Two-minute demo script
 
+> **Superseded on 2026-11-08 by [`submission/WAVE2_PITCH_SCRIPT.md`](/submission/WAVE2_PITCH_SCRIPT.md).** Kept for history; where the two differ, the newer document is current.
+
+
 Record only real UI and real transactions. If a step has not genuinely happened on-chain, say so on camera; never show a simulated hash as real. Times are an editing guide.
 
 **Pre-flight:**
