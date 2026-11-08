@@ -351,3 +351,95 @@ test('empty testnet pool is unavailable and quotes are labeled as test liquidity
   await expect(page.getByText(/insufficient liquidity/i)).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole('button', { name: /review swap/i })).toBeDisabled();
 });
+
+/** The live, historical plain MUSD transfer recorded in submission/evidence (no CMB2 suffix, different recipient). */
+const REAL_PLAIN_TRANSFER = '0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e';
+
+test('the payment stepper guides the payer: Review → Connect → Confirm → Verify', async ({ browser, baseURL }) => {
+  const { url } = await signedLink(baseURL!);
+  const ctx = await browser.newContext({ baseURL });
+  const page = await ctx.newPage();
+  await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
+  await page.goto(url);
+  const stepper = page.getByTestId('payment-stepper');
+  await expect(stepper.locator('[data-step="review"]')).toHaveAttribute('data-status', 'done');
+  await expect(stepper.locator('[data-step="connect"]')).toHaveAttribute('data-status', 'current');
+  // A funded wallet needs no BTC funding, so that step is not shown at all.
+  await expect(stepper.locator('[data-step="fund"]')).toHaveCount(0);
+  await connectTestWallet(page);
+  await dismissUsernamePrompt(page);
+  await expect(stepper.locator('[data-step="confirm"]')).toHaveAttribute('data-status', 'current', { timeout: 30_000 });
+  await expect(stepper.locator('[data-step="verify"]')).toHaveAttribute('data-status', 'upcoming');
+  await ctx.close();
+});
+
+test('a refresh while a payment is pending resumes watching it and does not offer to pay again', async ({ browser, baseURL }) => {
+  const { url, req } = await signedLink(baseURL!);
+  const ctx = await browser.newContext({ baseURL });
+  const page = await ctx.newPage();
+  await installTestWallet(page, { watchAddress: FUNDED_WATCH_ADDRESS });
+  // Simulates the device ledger entry the app writes when a wallet returns a hash. The hash is a
+  // deliberately unknown test value: the chain has no such transaction, so it stays "pending".
+  const pendingHash = `0x${'7e'.repeat(32)}`;
+  await page.addInitScript(({ key, entry }) => localStorage.setItem(key, JSON.stringify([entry])), {
+    key: `cambio.ledger.v2:${MEZO_TESTNET.chainId}:${FUNDED_WATCH_ADDRESS.toLowerCase()}`,
+    entry: {
+      mode: 'real', kind: 'transfer', chainId: MEZO_TESTNET.chainId, hash: pendingHash, from: FUNDED_WATCH_ADDRESS, to: req.recipient,
+      token: MEZO_TESTNET.tokens.MUSD.address, symbol: 'MUSD', decimals: 18, amount: req.amount, status: 'pending', submittedAt: Date.now(), requestId: req.id,
+    },
+  });
+  await page.goto(url);
+  await connectTestWallet(page);
+  await dismissUsernamePrompt(page);
+  await expect(page.getByText('You already submitted a payment for this request')).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText(/do not pay again/i)).toBeVisible();
+  await expect(page.getByTestId('payment-stepper').locator('[data-step="verify"]')).toHaveAttribute('data-status', 'current');
+  await expect(page.getByRole('button', { name: /payment pending — waiting for the network/i })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /review payment of/i })).toHaveCount(0);
+  await ctx.close();
+});
+
+test('public proof viewer: a real plain transfer is rejected as settlement of a signed invoice, without a wallet', async ({ page, request }) => {
+  const merchant = privateKeyToAccount(generatePrivateKey());
+  const own = buildPaymentRequest({ chain: MEZO_TESTNET, recipient: merchant.address, amount: 10n * 10n ** 18n, memo: 'Proof viewer check', lifetimeSeconds: 3600 });
+  const signature = await merchant.signTypedData(typedDataFor(own));
+  const stored = await request.post('/api/invoices', { data: { request: own, signature } });
+  expect(stored.status()).toBe(201);
+  // A judge pastes a real, successful MUSD transfer and claims it pays this invoice.
+  await page.goto(`/#proof/${merchant.address}/${own.id}?tx=${REAL_PLAIN_TRANSFER}`);
+  const verdict = page.getByTestId('proof-verdict');
+  await expect(verdict).toHaveAttribute('data-verdict', 'failed', { timeout: 60_000 });
+  await expect(page.getByText(/proof failed/i)).toBeVisible();
+  const checks = page.getByTestId('proof-checks');
+  // What is true is shown as true (it is a real, successful MUSD transfer, and the invoice is genuinely signed)…
+  await expect(checks.locator('li', { hasText: 'Transaction succeeded' })).toHaveAttribute('data-ok', 'true');
+  await expect(checks.locator('li', { hasText: 'Invoice signed by the merchant’s wallet' })).toHaveAttribute('data-ok', 'true');
+  // …and what is false is shown as false.
+  await expect(checks.locator('li', { hasText: 'Paid to the merchant' })).toHaveAttribute('data-ok', 'false');
+  await expect(checks.locator('li', { hasText: 'Payment carries this invoice’s request ID' })).toHaveAttribute('data-ok', 'false');
+  await expect(page.getByTestId('proof-amount')).toContainText('10.00');
+  // No wallet was ever involved, and the proof link carries no token.
+  expect(page.url()).not.toMatch(/token|bearer|session/i);
+});
+
+test('public proof viewer: an unpaid invoice is reported as not settled, and an unknown one as not found', async ({ page, request }) => {
+  const merchant = privateKeyToAccount(generatePrivateKey());
+  const own = buildPaymentRequest({ chain: MEZO_TESTNET, recipient: merchant.address, amount: 2n * 10n ** 18n, memo: '', lifetimeSeconds: 3600 });
+  const signature = await merchant.signTypedData(typedDataFor(own));
+  expect((await request.post('/api/invoices', { data: { request: own, signature } })).status()).toBe(201);
+  await page.goto(`/#proof/${merchant.address}/${own.id}`);
+  await expect(page.getByTestId('proof-verdict')).toHaveAttribute('data-verdict', 'unpaid', { timeout: 60_000 });
+  await page.goto(`/#proof/${merchant.address}/0x${'00'.repeat(16)}`);
+  await expect(page.getByTestId('proof-verdict')).toHaveAttribute('data-verdict', 'no_invoice', { timeout: 30_000 });
+});
+
+test('@mobile proof viewer fits a phone', async ({ page, request }) => {
+  const merchant = privateKeyToAccount(generatePrivateKey());
+  const own = buildPaymentRequest({ chain: MEZO_TESTNET, recipient: merchant.address, amount: 4n * 10n ** 18n, memo: 'Mobile', lifetimeSeconds: 3600 });
+  const signature = await merchant.signTypedData(typedDataFor(own));
+  expect((await request.post('/api/invoices', { data: { request: own, signature } })).status()).toBe(201);
+  await page.goto(`/#proof/${merchant.address}/${own.id}?tx=${REAL_PLAIN_TRANSFER}`);
+  await expect(page.getByTestId('proof-verdict')).toHaveAttribute('data-verdict', 'failed', { timeout: 60_000 });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});

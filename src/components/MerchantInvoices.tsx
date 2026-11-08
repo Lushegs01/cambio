@@ -7,7 +7,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CloudCheck, CloudOff, Download, ExternalLink, Loader2, LogIn, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, CloudCheck, CloudOff, Download, ExternalLink, Loader2, LogIn, RefreshCw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { signMessage } from 'wagmi/actions';
 import type { Hex } from 'viem';
 import type { MezoChainConfig } from '../config/chains';
@@ -234,6 +234,11 @@ export const MerchantInvoices: React.FC<Props> = ({ wallet, chain, local, onLoca
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
+                  {r.settlementTx && r.synced && (
+                    <a href={`#proof/${r.request.recipient}/${r.request.id}`} className="p-1 text-emerald-700 hover:text-emerald-900 dark:text-emerald-400" aria-label="Open the public settlement proof" title="Public proof anyone can verify without a wallet">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </a>
+                  )}
                   {r.settlementTx && (
                     <a href={explorerTxUrl(chain, r.settlementTx)} target="_blank" rel="noopener noreferrer" className="p-1 text-[#777777] hover:text-[#111111] dark:hover:text-[#FFFFFF]" aria-label="View settlement transaction">
                       <ExternalLink className="w-3.5 h-3.5" />
