@@ -117,10 +117,24 @@ async function repository() {
   const runs = await get(`https://api.github.com/repos/${repoSlug}/actions/runs?branch=main&per_page=10`);
   try {
     const list = (JSON.parse(runs!.text).workflow_runs as { name: string; event: string; status: string; conclusion: string | null; head_sha: string; html_url: string }[]).filter((r) => r.name === 'CI');
-    const latestPush = list.find((r) => r.event === 'push');
-    const latestScheduled = list.find((r) => r.event === 'schedule');
-    add({ area: 'Repository', name: 'CI green on main (latest push run)', status: latestPush?.conclusion === 'success' ? 'PASS' : latestPush ? 'FAIL' : 'BLOCKED', detail: latestPush ? `${latestPush.conclusion ?? latestPush.status} at ${latestPush.head_sha.slice(0, 7)} ${latestPush.html_url}` : 'no push run found' });
-    add({ area: 'Repository', name: 'Daily live-chain CI (latest scheduled run)', status: latestScheduled?.conclusion === 'success' ? 'PASS' : latestScheduled ? 'FAIL' : 'BLOCKED', detail: latestScheduled ? `${latestScheduled.conclusion ?? latestScheduled.status} at ${latestScheduled.head_sha.slice(0, 7)} ${latestScheduled.html_url}` : 'no scheduled run found' });
+    // Only completed runs count. A failure on an older commit than main's head says nothing about the
+    // current code: it is BLOCKED until a run completes for the head, never a permanent FAIL.
+    const done = list.filter((r) => r.status === 'completed');
+    const mainHead = list[0]?.head_sha;
+    const judge = (name: string, run: (typeof list)[number] | undefined) => {
+      if (!run) return add({ area: 'Repository', name, status: 'BLOCKED', detail: 'no completed run found' });
+      const where = `${run.conclusion} at ${run.head_sha.slice(0, 7)} ${run.html_url}`;
+      if (run.conclusion === 'success') return add({ area: 'Repository', name, status: 'PASS', detail: where });
+      if (mainHead && run.head_sha !== mainHead) return add({ area: 'Repository', name, status: 'BLOCKED', detail: `${where} — an older commit than main's head ${mainHead.slice(0, 7)}; waiting for a run on the head` });
+      add({ area: 'Repository', name, status: 'FAIL', detail: where });
+    };
+    judge('CI green on main (latest push run)', done.find((r) => r.event === 'push'));
+    if (process.env.GITHUB_ACTIONS) {
+      // Inside CI the running job is itself the evidence; reading the previous run would make one failure permanent.
+      add({ area: 'Repository', name: 'Daily live-chain CI (latest scheduled run)', status: 'BLOCKED', detail: 'not evaluated inside GitHub Actions (this job is the live check)' });
+    } else {
+      judge('Daily live-chain CI (latest scheduled run)', done.find((r) => r.event === 'schedule'));
+    }
   } catch {
     add({ area: 'Repository', name: 'CI green on main', status: 'BLOCKED', detail: 'GitHub API could not be read (rate limit); set GITHUB_TOKEN to check' });
   }
