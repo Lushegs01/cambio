@@ -39,7 +39,9 @@ async function get(url: string, timeoutMs = 20_000): Promise<{ status: number; t
   for (const delay of [0, 1500]) {
     if (delay) await new Promise((r) => setTimeout(r, delay));
     try {
-      const res = await fetch(url, { headers: url.startsWith('https://api.github.com/') ? GH : UA, redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
+      let res = await fetch(url, { headers: url.startsWith('https://api.github.com/') ? GH : UA, redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
+      // A token the API rejects (401) must not hide a public answer: retry anonymously.
+      if (res.status === 401 && GH !== UA && url.startsWith('https://api.github.com/')) res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(timeoutMs) });
       return { status: res.status, text: await res.text() };
     } catch {
       /* retry once */
@@ -102,13 +104,14 @@ async function deployment() {
 async function repository() {
   if (OFFLINE) return add({ area: 'Repository', name: 'Repository is public', status: 'BLOCKED', detail: 'offline mode' });
   const repo = await get(`https://api.github.com/repos/${repoSlug}`);
-  const limited = (r: { status: number } | null) => !r || r.status === 403 || r.status === 429;
   let visibility = 'unknown';
-  try { visibility = repo && repo.status === 200 ? JSON.parse(repo.text).visibility : 'unknown'; } catch { /* keep unknown */ }
+  try { visibility = repo && repo.status === 200 ? String(JSON.parse(repo.text).visibility) : 'unknown'; } catch { /* keep unknown */ }
+  // Definitive answers only: 200 with a visibility, or 404 (GitHub hides private repos from anonymous reads).
+  const definitive = repo?.status === 404 || (repo?.status === 200 && visibility !== 'unknown');
   add({
     area: 'Repository', name: 'Repository is public',
-    status: visibility === 'public' ? 'PASS' : limited(repo) ? 'BLOCKED' : 'FAIL',
-    detail: limited(repo) ? 'GitHub API rate-limited or unreachable; set GITHUB_TOKEN to check' : `visibility=${visibility}`,
+    status: visibility === 'public' ? 'PASS' : definitive ? 'FAIL' : 'BLOCKED',
+    detail: definitive || visibility === 'public' ? `visibility=${repo?.status === 404 ? 'private or missing (404)' : visibility}` : `GitHub API not readable (HTTP ${repo?.status ?? 'unreachable'}); set GITHUB_TOKEN to check`,
   });
 
   const runs = await get(`https://api.github.com/repos/${repoSlug}/actions/runs?branch=main&per_page=10`);
