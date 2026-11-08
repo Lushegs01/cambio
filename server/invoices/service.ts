@@ -63,7 +63,7 @@ export interface InvoiceServiceOptions {
   retryDelays?: readonly number[];
 }
 
-function defaultChainReader(): (chainId: number) => ChainReader {
+export function defaultChainReader(): (chainId: number) => ChainReader {
   const clients = new Map<number, ChainReader>();
   return (chainId) => {
     const chain = getKnownChainConfig(chainId);
@@ -190,6 +190,20 @@ export class InvoiceService {
     const page = rows.slice(0, limit);
     const last = page[page.length - 1];
     return { items: page.map(toPublic), nextCursor: rows.length > limit && last ? `${last.createdAt}:${last.id}` : null };
+  }
+
+  /** Every stored invoice for a merchant, newest first (bounded by the per-recipient cap). */
+  async allInvoices(address: string): Promise<InvoiceRecord[]> {
+    const out: InvoiceRecord[] = [];
+    let cursor: ListCursor | undefined;
+    for (let page = 0; page < Math.ceil(this.maxPerRecipient / 200) + 1; page++) {
+      const rows = await this.store.listInvoices(address, 200, cursor);
+      out.push(...rows);
+      if (rows.length < 200) break;
+      const last = rows[rows.length - 1];
+      cursor = { createdAt: last.createdAt, id: last.id };
+    }
+    return out;
   }
 
   /** Verifies a claimed payment on-chain and records it. Never trusts anything but the hash. */

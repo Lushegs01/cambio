@@ -91,13 +91,15 @@ export function mergeInvoices(local: StoredRequest[], server: ServerInvoice[], c
     .sort((a, b) => b.request.createdAt - a.request.createdAt || (a.request.id < b.request.id ? 1 : -1));
 }
 
-export type InvoiceFilter = 'all' | 'pending' | 'paid' | 'expired' | 'unknown';
+export type InvoiceFilter = 'all' | 'pending' | 'paid' | 'late' | 'duplicate' | 'expired' | 'unknown';
 
 export function filterInvoices(rows: InvoiceRow[], filter: InvoiceFilter, query: string): InvoiceRow[] {
   const q = query.trim().toLowerCase();
   return rows.filter((r) => {
     if (filter === 'paid' && r.status !== 'paid' && r.status !== 'paid_late') return false;
-    if (filter !== 'all' && filter !== 'paid' && r.status !== filter) return false;
+    if (filter === 'late' && r.status !== 'paid_late') return false;
+    if (filter === 'duplicate' && r.duplicatePayments.length === 0) return false;
+    if (filter !== 'all' && filter !== 'paid' && filter !== 'late' && filter !== 'duplicate' && r.status !== filter) return false;
     if (!q) return true;
     const amount = formatUnitsExact(BigInt(r.request.amount), 18);
     return r.request.memo.toLowerCase().includes(q) || r.request.id.toLowerCase().includes(q) || amount.startsWith(q) || (r.settlementTx ?? '').toLowerCase().includes(q);

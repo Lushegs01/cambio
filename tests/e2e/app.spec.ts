@@ -443,3 +443,27 @@ test('@mobile proof viewer fits a phone', async ({ page, request }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+test('Merchant Pro: a signed-in merchant gets a server-issued order whose payment is locked to treasury, price and order id', async ({ page }) => {
+  const key = generatePrivateKey();
+  await installTestWallet(page, { privateKey: key });
+  await page.goto('/app/request');
+  await connectTestWallet(page);
+  await dismissUsernamePrompt(page);
+  await page.getByRole('button', { name: /sign in to sync across devices/i }).click();
+  const pro = page.getByTestId('merchant-pro');
+  await expect(pro).toContainText('9 MUSD per 30 days');
+  await expect(pro).toContainText('Testnet pilot');
+  // Without Pro, the server-verified report is locked (402 on the server, disabled in the UI).
+  await expect(pro.getByRole('button', { name: /reconciliation report \(pro\)/i })).toBeDisabled();
+  await pro.getByRole('button', { name: /subscribe · 9 musd/i }).click();
+  await expect(page.getByText(/merchant pro subscription order 0x/i)).toBeVisible();
+  // Recipient and amount are locked to the server's order, not editable by the client.
+  await expect(page.locator('#send-recipient')).toHaveValue(/0x000000000000000000000000000000000000ca5e/i);
+  await expect(page.locator('#send-recipient')).toHaveAttribute('readonly', '');
+  // This fresh wallet holds no MUSD: the live preflight stops before any wallet prompt.
+  await expect(page.getByText('Valid address')).toBeVisible();
+  await page.getByRole('button', { name: /review transfer/i }).click();
+  await expect(page.getByText(/exceeds your balance of 0\.00 MUSD/i)).toBeVisible({ timeout: 30_000 });
+  expect(await sentTransactions(page)).toHaveLength(0);
+});

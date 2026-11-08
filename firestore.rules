@@ -37,6 +37,8 @@ service cloud.firestore {
     // Merchant invoices, invoice counters, merchant sign-in challenges and sessions are server-only:
     // `invoices`, `invoice_owners`, `merchant_challenges`, `merchant_sessions`. Browsers use the API,
     // which verifies signatures and on-chain settlement. (Covered by the default deny above.)
+    // Merchant Pro billing is server-only too: `billing_orders`, `billing_subscriptions`, `billing_payments`.
+    // Entitlement is granted only by the API after it verifies the MUSD payment on-chain. (Default deny.)
 
     // Legacy collections from the prototype. Their ownership was never verified, so they are
     // neither readable nor writable: `usernames`, `wallets`, `wallet_transactions`, `user_preferences`.

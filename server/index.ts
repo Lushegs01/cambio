@@ -22,11 +22,12 @@ process.on('unhandledRejection', (reason) => {
 async function main() {
   const publicOrigin = parsePublicOrigin(process.env.APP_URL);
   const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
-  const { identity, invoices, error, rateLimitStore, close } = await bootstrapIdentity(process.env, 'production');
+  const { identity, invoices, billing, error, rateLimitStore, close } = await bootstrapIdentity(process.env, 'production');
   if (process.env.IDENTITY_STORE === 'sqlite' && !identity) throw new Error(error || 'SQLite identity is required for self-hosted startup.');
   const api = createApiApp({
     identity,
     invoices,
+    billing,
     identityInitError: error,
     rateLimitStore,
     allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),

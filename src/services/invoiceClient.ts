@@ -96,3 +96,63 @@ export function startMerchantSession(address: string, chainId: number) {
 export function completeMerchantSession(nonce: string, signature: Hex) {
   return call<{ token: string; address: Address; expiresAt: number }>('/api/merchant/session', { method: 'POST', body: JSON.stringify({ nonce, signature }) });
 }
+
+// ---------------------------------------------------------------------------------------------
+// Merchant Pro billing (testnet). The server fixes price, treasury and period, and grants entitlement
+// only after verifying the MUSD payment on-chain; the client supplies nothing but the hash.
+
+export interface BillingOrder {
+  id: Hex;
+  merchant: string;
+  chainId: number;
+  token: Address;
+  treasury: Address;
+  amount: string;
+  periodDays: number;
+  createdAt: number;
+  expiresAt: number;
+  status: 'open' | 'paid';
+  payment: { txHash: Hex; payer: string; blockNumber: string; paidAt: number; verifiedAt: number; late: boolean } | null;
+}
+
+export interface BillingStatus {
+  enabled: boolean;
+  chainId: number;
+  isTestnet: boolean;
+  priceMusd: string;
+  amount: string;
+  periodDays: number;
+  treasury: Address | null;
+  active: boolean;
+  proUntil: number | null;
+  orders: BillingOrder[];
+}
+
+const bearer = (token: string) => ({ authorization: `Bearer ${token}` });
+
+export function getBillingStatus(token: string) {
+  return call<BillingStatus>('/api/billing/status', { headers: bearer(token) });
+}
+
+export function createBillingOrder(token: string) {
+  return call<{ order: BillingOrder }>('/api/billing/orders', { method: 'POST', body: '{}', headers: bearer(token) }).then((r) => r.order);
+}
+
+export function submitBillingPayment(token: string, orderId: string, txHash: Hex) {
+  return call<BillingStatus>(`/api/billing/orders/${orderId}/payment`, { method: 'POST', body: JSON.stringify({ txHash }), headers: bearer(token) }, 45_000);
+}
+
+/** Pro: the server-verified reconciliation report. Throws InvoiceApiError(402) without an active subscription. */
+export async function downloadReconciliationReport(token: string): Promise<Blob> {
+  let res: Response;
+  try {
+    res = await fetch('/api/invoices/report.csv', { headers: bearer(token) });
+  } catch {
+    throw new InvoiceApiError(0, 'network', 'The invoice service could not be reached.');
+  }
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
+    throw new InvoiceApiError(res.status, body?.error || 'error', body?.message || 'Request failed.');
+  }
+  return res.blob();
+}

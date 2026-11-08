@@ -26,11 +26,17 @@ import type { IdentityStore } from './identity/store.js';
 import type { SharedRateLimitStore } from './rateLimit.js';
 import { InvoiceService } from './invoices/service.js';
 import { MemoryInvoiceStore } from './invoices/memoryStore.js';
+import { BillingService, billingConfigFromEnv } from './billing/service.js';
+import { MemoryBillingStore } from './billing/memoryStore.js';
+import type { BillingStore } from './billing/store.js';
+import { defaultChainReader } from './invoices/service.js';
 
 export interface IdentityBootstrap {
   identity: IdentityService | null;
   /** Merchant invoices share the identity backend (same Firestore database or SQLite file). */
   invoices?: InvoiceService | null;
+  /** Merchant Pro billing on the same backend. Enabled only when PRO_TREASURY_ADDRESS is set. */
+  billing?: BillingService | null;
   error?: string;
   store?: IdentityStore['kind'];
   rateLimitStore?: SharedRateLimitStore;
@@ -78,6 +84,16 @@ async function createFirestoreInvoiceService(store: Awaited<ReturnType<typeof cr
   return new InvoiceService({ store: new FirestoreInvoiceStore(store.database, !env.FIRESTORE_EMULATOR_HOST), minConfirmations: confirmations(env) });
 }
 
+/** Billing never blocks identity or invoices: an invalid billing setting disables billing and is logged by name only. */
+function makeBilling(store: BillingStore, env: NodeJS.ProcessEnv): BillingService | null {
+  try {
+    return new BillingService(store, billingConfigFromEnv(env), defaultChainReader(), { minConfirmations: confirmations(env) });
+  } catch (err) {
+    console.error('[billing] disabled:', err instanceof Error ? err.message : 'invalid configuration');
+    return null;
+  }
+}
+
 function confirmations(env: NodeJS.ProcessEnv): number {
   const n = Number(env.INVOICE_MIN_CONFIRMATIONS || 1);
   return Number.isSafeInteger(n) && n >= 1 && n <= 100 ? n : 1;
@@ -98,12 +114,15 @@ export async function bootstrapIdentity(env: NodeJS.ProcessEnv = process.env, mo
       await store.ping();
       const { SqliteInvoiceStore } = await import('./invoices/sqliteStore.js');
       const invoiceStore = new SqliteInvoiceStore(env.IDENTITY_DATABASE_PATH);
+      const { SqliteBillingStore } = await import('./billing/sqliteStore.js');
+      const billingStore = new SqliteBillingStore(env.IDENTITY_DATABASE_PATH);
       return {
         identity: new IdentityService({ store }),
         invoices: new InvoiceService({ store: invoiceStore, minConfirmations: confirmations(env) }),
+        billing: makeBilling(billingStore, env),
         store: 'sqlite',
         rateLimitStore: store,
-        close: () => { invoiceStore.close(); store.close(); },
+        close: () => { billingStore.close(); invoiceStore.close(); store.close(); },
       };
     } catch {
       console.error('[identity] SQLite initialization failed; check the database path, permissions and schema version.');
@@ -116,14 +135,26 @@ export async function bootstrapIdentity(env: NodeJS.ProcessEnv = process.env, mo
       return { identity: null, error: 'IDENTITY_STORE=memory is not allowed in production (set ALLOW_NON_DURABLE_IDENTITY=true to override).' };
     }
     console.warn('[identity] Using the in-memory store: usernames are NOT durable and NOT shared across instances.');
-    return { identity: new IdentityService({ store: new MemoryIdentityStore() }), invoices: new InvoiceService({ store: new MemoryInvoiceStore(), minConfirmations: confirmations(env) }), store: 'memory' };
+    return {
+      identity: new IdentityService({ store: new MemoryIdentityStore() }),
+      invoices: new InvoiceService({ store: new MemoryInvoiceStore(), minConfirmations: confirmations(env) }),
+      billing: makeBilling(new MemoryBillingStore(), env),
+      store: 'memory',
+    };
   }
 
   if (requested !== 'firestore') return { identity: null, error: `Unknown IDENTITY_STORE "${requested}"` };
 
   try {
     const store = await createFirestoreStore(env);
-    return { identity: new IdentityService({ store }), invoices: await createFirestoreInvoiceService(store, env), store: 'firestore', rateLimitStore: store };
+    const { FirestoreBillingStore } = await import('./billing/firestoreStore.js');
+    return {
+      identity: new IdentityService({ store }),
+      invoices: await createFirestoreInvoiceService(store, env),
+      billing: makeBilling(new FirestoreBillingStore(store.database), env),
+      store: 'firestore',
+      rateLimitStore: store,
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[identity] Firestore store could not be initialised:', message);

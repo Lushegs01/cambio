@@ -42,7 +42,7 @@ interface SendModalProps {
   initialAmount?: string;
   initialMemo?: string;
   /** Paying a verified, signed request: recipient and amount are locked and the request id is bound into the calldata. */
-  lockedRequest?: { request: SignedPaymentRequest; recipientLabel: string } | null;
+  lockedRequest?: { request: SignedPaymentRequest; recipientLabel: string; notice?: string } | null;
   onRequestPaid?: (hash: Hex) => void;
 }
 
@@ -474,7 +474,7 @@ export const SendModal: React.FC<SendModalProps> = ({
               {lockedRequest && (
                 <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 shrink-0" />
-                  <span>Paying a request signed by the recipient’s wallet. Recipient and amount are locked to what they signed.</span>
+                  <span>{lockedRequest.notice ?? 'Paying a request signed by the recipient’s wallet. Recipient and amount are locked to what they signed.'}</span>
                 </div>
               )}
 

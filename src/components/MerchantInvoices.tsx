@@ -31,6 +31,7 @@ import {
   type InvoiceRow,
   type LocalCheck,
 } from '../lib/invoices';
+import { MerchantProCard } from './MerchantProCard';
 import { completeMerchantSession, InvoiceApiError, listAllInvoices, saveInvoice, startMerchantSession, submitSettlement, type ServerInvoice } from '../services/invoiceClient';
 
 const musd = (v: bigint) => formatTokenDisplay(v, 18, { maxFractionDigits: 2, minFractionDigits: 2 });
@@ -47,6 +48,8 @@ const FILTERS: { key: InvoiceFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'pending', label: 'Pending' },
   { key: 'paid', label: 'Paid' },
+  { key: 'late', label: 'Late' },
+  { key: 'duplicate', label: 'Duplicate' },
   { key: 'expired', label: 'Expired' },
   { key: 'unknown', label: 'Unknown' },
 ];
@@ -185,6 +188,7 @@ export const MerchantInvoices: React.FC<Props> = ({ wallet, chain, local, onLoca
         )}
       </div>
       {!token && <p className="text-[11px] text-[#777777] -mt-2 flex items-center gap-1.5"><CloudOff className="w-3.5 h-3.5" /> Showing requests saved on this device. Signing in is a free wallet signature (no transaction).</p>}
+      {token && <MerchantProCard token={token} wallet={wallet} chain={chain} />}
       {syncError && <p role="alert" className="text-xs text-amber-700 dark:text-amber-400">{syncError}</p>}
       {truncated && <p className="text-xs text-amber-700 dark:text-amber-400">Showing the newest 1,000 invoices.</p>}
 

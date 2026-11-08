@@ -94,4 +94,14 @@ describe('server-only and legacy collections', () => {
       await assertFails(setDoc(doc(db, 'merchant_sessions/forged'), { address: ALICE, expiresAt: 9e15 }));
     }
   });
+
+  it('never lets a browser read or grant Merchant Pro entitlement', async () => {
+    for (const db of [anon(), signedIn(ALICE)]) {
+      await assertFails(setDoc(doc(db, `billing_subscriptions/${ALICE}`), { merchant: ALICE, proUntil: 9e15, orders: [] }));
+      await assertFails(getDoc(doc(db, `billing_subscriptions/${ALICE}`)));
+      await assertFails(getDocs(collection(db, 'billing_orders')));
+      await assertFails(setDoc(doc(db, 'billing_orders/0x00000000000000000000000000000001'), { status: 'paid' }));
+      await assertFails(setDoc(doc(db, `billing_payments/0x${'1'.repeat(64)}`), { orderId: 'x' }));
+    }
+  });
 });
