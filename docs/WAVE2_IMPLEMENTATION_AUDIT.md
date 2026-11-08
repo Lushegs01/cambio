@@ -71,3 +71,17 @@ Baseline audited on 2026-11-08 at `main` = `c3c47df`. Work is on branch `lushegs
 - **A checkout contract:** needs an audit.
 - **Telegram bot, reminders, webhooks:** prioritised below the flagship journey.
 - **Real-device mobile testing and Lighthouse:** no devices were available here.
+
+## Judging scorecard (agent's evidence-based estimate — not the judges' score)
+
+The estimates are deliberately conservative. A score is only raised by results someone can independently verify, never because code exists.
+
+| Category (weight) | Estimate now | Evidence | Remaining weaknesses | Unresolved blockers | Conditions for 10/10-level readiness |
+| --- | --- | --- | --- | --- | --- |
+| **Mezo Integration (30%)** | **7 / 10** | Transfer and Router swap PASS live; PriceFeed, TroveManager and Multicall reads verified (`test:live`, `verify:chain`); Fund & Pay sizing verified live; settlement verification is strict and shared by server, browser and CLI | No signed-invoice settlement on-chain; Fund & Pay never run end to end on-chain; borrowing is preview-only | Owner action §1 | Signed settlement PASS, plus a Fund & Pay swap and settlement pair from the same payer, both cited; an executable, risk-reviewed borrowing route |
+| **Product & Business Viability (30%)** | **6 / 10** | Narrow segment; implemented, tested non-custodial subscription mechanism; distribution channels; honest unit economics | Zero users, interviews or subscriptions; billing is off in production | Owner actions §0.3 and §3 | 3–5 real merchants with verified settlements in `pilot:metrics`; ≥ 3 pricing interviews; one real testnet subscription verified |
+| **Technical Implementation (20%)** | **8.5 / 10** | 305 unit, 26 emulator, 26 e2e and 7 live tests; CI green on all jobs (run 42482775620); a double-payment bug found and fixed; three stores under one contract | No independent audit; 11 high transitive advisories (no upstream fix); public RPC trust; no metrics backend | — | Independent review; a second RPC for verification; observability; advisories resolved upstream |
+| **User Experience (10%)** | **7 / 10** | Stepper; pending recovery with "do not pay again"; receipt and proof page; plain-language errors; mobile viewport e2e; ARIA states | No usability sessions; no real-device or wallet-app testing; Fund & Pay needs three prompts | Owner action §3 | 5 moderated sessions with the issues they reveal fixed; real MetaMask Mobile and WalletConnect runs |
+| **Submission Materials (10%)** | **7 / 10** | Deck (12 slides, real screenshots, overflow-checked); judge response; generated readiness report; owner runbook; script and demo guide | No video; the evidence slide still shows the settlement as pending | Owner actions §1 and §2 | A video of the real journey; all three proofs PASS on the slide and in the README |
+
+**Weighted estimate now: about 7.0 / 10.** After owner actions §0–§2 (deploy, signed settlement, video), the projection is about 7.6. A small but real pilot (§3) would bring it to about 8.1. Reaching 9–10 needs real users and an independent review, and those cannot be produced by code. The judges' decision is theirs.

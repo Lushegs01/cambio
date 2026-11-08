@@ -74,4 +74,10 @@ Vercel showing READY is not treated as proof of health; the checks above are wha
 - **On push and pull request:** typecheck, lint, unit, build, audit (fails on critical), Firestore emulator, Playwright.
 - **Daily and on manual dispatch:** `verify:chain`, `test:live`, `verify:evidence`. Exit 2 (pending) is tolerated; FAIL is not.
 
-The last scheduled run before this branch failed on an RPC read; this is fixed by `retryRead`. CI results for this branch appear on push. The submission gate is `npm run check:submission`, which turns any missing proof, video or user evidence into BLOCKED and never into ready.
+The last scheduled run on main before this branch (2026-11-07, [run 42375106119](https://github.com/Lushegs01/cambio/actions/runs/42375106119)) failed on an RPC read; fixed by `retryRead`.
+
+On this branch, manually dispatched runs found and fixed two more CI-only problems:
+- [Run 42481938999](https://github.com/Lushegs01/cambio/actions/runs/42481938999): the mainnet RPC `mezo.drpc.org` refused `eth_call` from GitHub's runners. `verify:chain` now uses the first RPC that serves calls.
+- [Run 42482405882](https://github.com/Lushegs01/cambio/actions/runs/42482405882): the readiness checker would have made one failed daily run fail every later run. CI-status rows now judge only completed runs on the head.
+
+[Run 42482775620](https://github.com/Lushegs01/cambio/actions/runs/42482775620) at `c751ee0` is **green on all four jobs**: checks, emulator, Playwright, and live chain incl. `check:submission`. The submission gate is `npm run check:submission`, which turns any missing proof, video or user evidence into BLOCKED and never into ready.
