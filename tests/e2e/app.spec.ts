@@ -309,6 +309,15 @@ test('recipient creates a signed request through its real wallet signature and o
   await page.getByLabel(/amount/i).first().fill('5');
   await page.getByRole('button', { name: /sign & create request/i }).click();
   await expect(page.getByText('Signed request', { exact: true })).toBeVisible();
+  // Distribution: WhatsApp and the embeddable button carry the exact signed link.
+  const link = await page.getByLabel('Payment link').inputValue();
+  expect(link).toMatch(/#pay\?r=[A-Za-z0-9_-]+&s=0x[0-9a-f]+$/);
+  const wa = await page.getByRole('link', { name: /whatsapp/i }).getAttribute('href');
+  expect(decodeURIComponent(wa!.replace('https://wa.me/?text=', ''))).toContain(link);
+  await page.getByText(/embed a “pay with cambio” button/i).click();
+  const html = await page.getByLabel('Pay button HTML').inputValue();
+  expect(html).not.toMatch(/<script/i);
+  expect(html).toContain(link.replace(/&/g, '&amp;'));
   await page.getByRole('button', { name: /^preview$/i }).click();
   await expect(page.getByText(/signed by the recipient’s wallet/i)).toBeVisible();
 });
