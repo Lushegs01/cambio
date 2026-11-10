@@ -46,3 +46,23 @@ for (const batched of [false, true]) {
   }
   console.log(JSON.stringify({ batched, mezoCard: { requests: cardReq, medianMs: Math.round(median(card)) }, fundAndPay: { requests: fundReq, medianMs: Math.round(median(fund)) } }));
 }
+
+// Settlement-evidence verification latency (what the proof viewer and the server do per payment):
+// transaction + receipt + block reads with not-found/transient retries, then the pure checks.
+{
+  const { fetchEvidence, checkMusdTransfer } = await import('../src/lib/evidence.ts');
+  const hash = '0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e' as const;
+  const times: number[] = [];
+  let notPass = 0;
+  let requests = 0;
+  for (let i = 0; i < 7; i++) {
+    const a = client(false);
+    const t = performance.now();
+    const f = await fetchEvidence(a.c as never, hash);
+    times.push(performance.now() - t);
+    requests = Math.max(requests, a.count());
+    if (!f.ok || checkMusdTransfer(chain, hash, f.tx, f.receipt, f.blockTimestampMs).verdict !== 'PASS') notPass++;
+  }
+  const sorted = [...times].sort((x, y) => x - y);
+  console.log(JSON.stringify({ evidenceVerification: { samples: times.length, medianMs: Math.round(median(times)), minMs: Math.round(sorted[0]), maxMs: Math.round(sorted[sorted.length - 1]), maxRequests: requests, notPass } }));
+}

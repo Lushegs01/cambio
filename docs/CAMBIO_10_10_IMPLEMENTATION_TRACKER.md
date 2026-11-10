@@ -1,5 +1,8 @@
 # Cambio Wave 2 implementation tracker
 
+> **Superseded on 2026-11-08 by [`docs/WAVE2_IMPLEMENTATION_AUDIT.md`](/docs/WAVE2_IMPLEMENTATION_AUDIT.md).** Kept for history; where the two differ, the newer document is current.
+
+
 Branch `lushegs/magical-hamilton-fopk6s`, starting from `0961046` (Wave 1). Last updated 2026-11-05.
 
 Status legend: ✅ implemented & verified · 🟡 implemented, unverified or not deployed · ⏳ blocked on an owner/external action · ❌ not done

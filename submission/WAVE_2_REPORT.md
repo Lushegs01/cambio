@@ -1,5 +1,8 @@
 # Cambio: what changed in Wave 2
 
+> **Superseded on 2026-11-08 by [`submission/WAVE2_JUDGE_RESPONSE.md`](/submission/WAVE2_JUDGE_RESPONSE.md).** Kept for history; where the two differ, the newer document is current.
+
+
 Wave 1 baseline: commit `0961046` (2026-11-03). Wave 2 work is on branch `lushegs/magical-hamilton-fopk6s`. Each row maps to a point in the Wave 1 judge feedback.
 
 | Wave 1 feedback | What changed in Wave 2 | Where to verify |

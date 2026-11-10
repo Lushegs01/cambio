@@ -16,7 +16,7 @@ import { erc20Abi, routerAbi } from '../config/abis.js';
 import type { MezoChainConfig } from '../config/chains.js';
 import { receiptHasTransfer, receivedFromReceipt, type ReceiptWithLogs } from './receiptEvidence.js';
 import { REQUEST_SUFFIX_MAGIC, verifySettlement, type SignedPaymentRequest } from './paymentRequest.js';
-import { NOT_FOUND_RETRY_DELAYS_MS, retryNotFound } from './rpcRetry.js';
+import { EVIDENCE_RETRY_DELAYS_MS, retryRead } from './rpcRetry.js';
 
 export type Verdict = 'PASS' | 'FAIL' | 'INCONCLUSIVE';
 export type ProofKind = 'musd_transfer' | 'btc_to_musd_swap' | 'signed_request_settlement';
@@ -250,15 +250,16 @@ export type Fetched =
   | { ok: false; reason: string };
 
 /** Reads tx, receipt and block. Any read failure is reported, never guessed. */
-export async function fetchEvidence(client: EvidenceClient, hash: Hex, retryDelays: readonly number[] = NOT_FOUND_RETRY_DELAYS_MS): Promise<Fetched> {
+export async function fetchEvidence(client: EvidenceClient, hash: Hex, retryDelays: readonly number[] = EVIDENCE_RETRY_DELAYS_MS): Promise<Fetched> {
   if (!HASH_RE.test(hash)) return { ok: false, reason: 'Not a 32-byte transaction hash' };
   let tx: EvidenceTx;
   let receipt: EvidenceReceipt;
   try {
-    // Load-balanced RPC nodes can briefly disagree; a single "not found" is retried before it counts.
+    // Load-balanced RPC nodes can briefly disagree, and public nodes time out under load; a single
+    // "not found" or transport error is retried before it counts.
     [tx, receipt] = await Promise.all([
-      retryNotFound(() => client.getTransaction({ hash }), retryDelays),
-      retryNotFound(() => client.getTransactionReceipt({ hash }), retryDelays),
+      retryRead(() => client.getTransaction({ hash }), retryDelays),
+      retryRead(() => client.getTransactionReceipt({ hash }), retryDelays),
     ]);
   } catch (err) {
     const name = (err as { name?: string }).name ?? '';
@@ -266,7 +267,7 @@ export async function fetchEvidence(client: EvidenceClient, hash: Hex, retryDela
   }
   let blockTimestampMs: number | null;
   try {
-    blockTimestampMs = Number((await client.getBlock({ blockNumber: receipt.blockNumber })).timestamp) * 1000;
+    blockTimestampMs = Number((await retryRead(() => client.getBlock({ blockNumber: receipt.blockNumber }), retryDelays)).timestamp) * 1000;
   } catch {
     blockTimestampMs = null;
   }
@@ -289,6 +290,51 @@ export function findSuffixedPayments(
     const call = splitTransferCalldata(input as Hex);
     const requestId = call ? requestIdFromSuffix(call.suffix) : null;
     if (call && requestId) out.push({ hash: hash as Hex, from: getAddress(from), recipient: call.to, amount: call.amount, requestId });
+  }
+  return out;
+}
+
+export interface DiscoveryCandidate {
+  hash: Hex;
+  from: Address;
+  recipient: Address;
+  requestId: Hex;
+}
+
+export type DiscoveryOutcome =
+  | { hash: Hex; requestId: Hex; status: 'verified'; result: EvidenceResult; link: string }
+  | { hash: Hex; requestId: Hex; status: 'rejected'; result: EvidenceResult; link: string }
+  | { hash: Hex; requestId: Hex; status: 'no_signed_request'; reason: string };
+
+/**
+ * For each CMB2 payment to `merchant`, recover the signed request by the request id the chain carries,
+ * then verify it end to end. The registry is untrusted: `verify` must re-check the EIP-712 signature
+ * and the settlement, so a forged or altered registry entry yields 'rejected', never 'verified'.
+ */
+export async function discoverSignedSettlements(
+  candidates: readonly DiscoveryCandidate[],
+  merchant: Address,
+  fetchSigned: (recipient: Address, id: Hex) => Promise<{ request: SignedPaymentRequest; signature: Hex } | { error: string }>,
+  makeLink: (request: SignedPaymentRequest, signature: Hex) => string,
+  verify: (hash: Hex, link: string) => Promise<EvidenceResult>
+): Promise<DiscoveryOutcome[]> {
+  const out: DiscoveryOutcome[] = [];
+  const seen = new Set<string>();
+  for (const c of candidates) {
+    if (c.recipient.toLowerCase() !== merchant.toLowerCase() || seen.has(c.hash.toLowerCase())) continue;
+    seen.add(c.hash.toLowerCase());
+    const signed = await fetchSigned(c.recipient, c.requestId);
+    if ('error' in signed) {
+      out.push({ hash: c.hash, requestId: c.requestId, status: 'no_signed_request', reason: signed.error });
+      continue;
+    }
+    if (signed.request.id.toLowerCase() !== c.requestId.toLowerCase() || signed.request.recipient.toLowerCase() !== c.recipient.toLowerCase()) {
+      out.push({ hash: c.hash, requestId: c.requestId, status: 'no_signed_request', reason: 'registry returned a request with a different id or recipient' });
+      continue;
+    }
+    const link = makeLink(signed.request, signed.signature);
+    const result = await verify(c.hash, link);
+    out.push({ hash: c.hash, requestId: c.requestId, status: result.verdict === 'PASS' ? 'verified' : 'rejected', result, link });
   }
   return out;
 }

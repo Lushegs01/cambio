@@ -1,0 +1,25 @@
+{
+  "schema": "cambio.submission-fields.v1",
+  "note": "Draft of the AKINDO form fields. null means the owner must supply it; the readiness checker reports it as BLOCKED. Nothing here has been submitted.",
+  "event": {
+    "platform": "AKINDO",
+    "eventUrl": "https://app.akindo.io/wave-hacks/OVOO0gdrVU8379D10",
+    "wave": 2,
+    "deadlineUtc": "2026-11-13T05:30:00Z",
+    "deadlineSource": "AKINDO Wave 2 submissionDeadline field, read 2026-11-05; the announcement text says Nov 15. Plan against the earlier date and confirm in the AKINDO UI."
+  },
+  "projectName": "Cambio",
+  "tagline": "Wallet-signed MUSD invoices that Bitcoin holders can fund and pay on Mezo, with settlement anyone can verify.",
+  "track": "Track 2 — Access & Distribution",
+  "chain": "Mezo Testnet (chain 31611); mainnet disabled",
+  "team": {
+    "members": [{ "name": "Lushegs", "role": "Solo builder: product, design, engineering", "github": "https://github.com/Lushegs01" }],
+    "socialLinks": null
+  },
+  "liveUrl": "https://cambio-five.vercel.app",
+  "repoUrl": "https://github.com/Lushegs01/cambio",
+  "deckPath": "submission/CAMBIO_FINAL_PITCH_DECK.pdf",
+  "demoVideoUrl": null,
+  "judgeResponsePath": "submission/WAVE2_JUDGE_RESPONSE.md",
+  "evidencePath": "submission/evidence/transaction-proofs.json"
+}

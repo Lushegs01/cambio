@@ -1,5 +1,8 @@
 # Business model
 
+> **Superseded on 2026-11-08 by [`docs/WAVE2_BUSINESS_MODEL.md`](/docs/WAVE2_BUSINESS_MODEL.md).** Kept for history; where the two differ, the newer document is current.
+
+
 Status: **hypotheses, not results.** Cambio has no paying customers, no revenue and no completed user research as of 2026-11-05. Everything below is a plan to test, with the mechanism and the evidence that would confirm or reject it.
 
 ## Customer segments

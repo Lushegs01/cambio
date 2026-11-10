@@ -10,6 +10,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { IdentityError, IdentityService, StoreUnavailableError, type OriginContext } from './identity/service.js';
 import { rateLimit, type SharedRateLimitStore } from './rateLimit.js';
 import { InvoiceError, type InvoiceService } from './invoices/service.js';
+import type { BillingService } from './billing/service.js';
 
 export interface AppOptions {
   /** Null when the identity store could not be initialised; identity routes then answer 503. */
@@ -17,6 +18,8 @@ export interface AppOptions {
   identityInitError?: string;
   /** Merchant invoice registry; null/undefined when unavailable (routes then answer 503). */
   invoices?: InvoiceService | null;
+  /** Merchant Pro billing (testnet). Null/undefined when not wired; it reports enabled:false without a treasury. */
+  billing?: BillingService | null;
   /** Extra origins allowed to call the API cross-origin. Same-origin requests need nothing. */
   allowedOrigins?: string[];
   trustProxy?: boolean | number | string;
@@ -100,7 +103,12 @@ export function createApiApp(opts: AppOptions) {
       }
       try {
         await opts.identity.ping();
-        res.json({ ok: true, identity: { available: true, ...opts.identity.storeInfo }, invoices: opts.invoices ? { available: true, ...opts.invoices.storeInfo } : { available: false } });
+        res.json({
+          ok: true,
+          identity: { available: true, ...opts.identity.storeInfo },
+          invoices: opts.invoices ? { available: true, ...opts.invoices.storeInfo } : { available: false },
+          billing: { enabled: !!opts.billing?.enabled },
+        });
       } catch (err) {
         res.status(503).json({ ok: false, identity: { available: false, ...opts.identity.storeInfo, error: 'store unreachable' } });
       }
@@ -191,6 +199,62 @@ export function createApiApp(opts: AppOptions) {
     })
   );
 
+  // Merchant Pro billing (testnet). Every route needs a merchant session; entitlement is granted only after
+  // the server verifies the MUSD payment on-chain.
+  const requireBilling = (_req: Request, res: Response, next: NextFunction) => {
+    if (!opts.invoices || !opts.billing) {
+      res.status(503).json({ error: 'billing_unavailable', message: 'Merchant Pro billing is unavailable on this deployment.' });
+      return;
+    }
+    next();
+  };
+
+  app.get(
+    '/api/billing/status',
+    lookupLimit,
+    requireBilling,
+    wrap(async (req, res) => {
+      const merchant = await opts.invoices!.authenticate(req.get('authorization'));
+      res.json(await opts.billing!.status(merchant));
+    })
+  );
+
+  app.post(
+    '/api/billing/orders',
+    invoiceLimit,
+    requireBilling,
+    wrap(async (req, res) => {
+      const merchant = await opts.invoices!.authenticate(req.get('authorization'));
+      res.status(201).json({ order: await opts.billing!.createOrder(merchant) });
+    })
+  );
+
+  app.post(
+    '/api/billing/orders/:id/payment',
+    invoiceLimit,
+    requireBilling,
+    wrap(async (req, res) => {
+      const merchant = await opts.invoices!.authenticate(req.get('authorization'));
+      res.json(await opts.billing!.submitPayment(merchant, req.params.id, req.body ?? {}));
+    })
+  );
+
+  // Pro: server-verified reconciliation report of every stored invoice.
+  app.get(
+    '/api/invoices/report.csv',
+    lookupLimit,
+    requireBilling,
+    wrap(async (req, res) => {
+      const merchant = await opts.invoices!.authenticate(req.get('authorization'));
+      await opts.billing!.requirePro(merchant);
+      const rows = await opts.invoices!.allInvoices(merchant);
+      const origin = opts.publicOrigin ?? `${req.protocol}://${req.get('host')}`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="cambio-reconciliation-${new Date().toISOString().slice(0, 10)}.csv"`);
+      res.send(opts.billing!.reconciliationCsv(rows, origin));
+    })
+  );
+
   app.post(
     '/api/merchant/challenge',
     mutateLimit,
@@ -224,7 +288,7 @@ export function createApiApp(opts: AppOptions) {
       return;
     }
     if (err instanceof StoreUnavailableError) {
-      const invoiceRoute = /^\/api\/(?:invoices|merchant)\b/.test(_req.originalUrl || '');
+      const invoiceRoute = /^\/api\/(?:invoices|merchant|billing)\b/.test(_req.originalUrl || '');
       res.status(503).json(invoiceRoute
         ? { error: 'invoices_unavailable', message: 'The invoice registry is unavailable. Payment links still work without it.' }
         : { error: 'identity_unavailable', message: 'The username registry is unavailable. Try again later.' });

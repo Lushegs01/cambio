@@ -48,7 +48,23 @@ async function verify(chain: MezoChainConfig) {
       bad(`RPC ${rpc} unreachable: ${(e as Error).message.split('\n')[0]}`);
     }
   }
-  const c = createPublicClient({ transport: http(chain.rpcUrls[0], { timeout: 15_000 }) });
+  // Contract checks use the first configured RPC that actually serves eth_call. Public providers differ by
+  // caller (e.g. one refused eth_call from GitHub's runners on 2026-11-08 while answering eth_chainId).
+  let c = createPublicClient({ transport: http(chain.rpcUrls[0], { timeout: 15_000 }) });
+  let callRpc: string | null = null;
+  for (const rpc of chain.rpcUrls) {
+    const candidate = createPublicClient({ transport: http(rpc, { timeout: 15_000 }) });
+    try {
+      await candidate.readContract({ address: chain.tokens.MUSD.address, abi: erc20, functionName: 'decimals' });
+      c = candidate;
+      callRpc = rpc;
+      break;
+    } catch (e) {
+      console.log(`  ! RPC ${rpc} does not serve eth_call here (${(e as Error).message.split('\n')[0]}); trying the next one`);
+    }
+  }
+  if (callRpc) ok(`contract reads via ${callRpc}`);
+  else bad('no configured RPC serves eth_call; contract checks below will fail');
 
   for (const t of Object.values(chain.tokens)) {
     try {

@@ -2,6 +2,8 @@
 
 **Verdict: INCONCLUSIVE (pending). Do not cite this proof as complete.**
 
+> **Update 2026-11-08.** A re-scan of @lushegs and @solo still finds no CMB2-suffixed payment. Two @solo transfers that the first scan could not read were fetched directly: both are plain 68-byte `transfer` calls. The current procedure is `submission/WAVE2_OWNER_ACTIONS.md` §1. After paying a signed invoice in the app, run `npm run verify:evidence -- --discover <merchant> --write`. It finds the payment by its on-chain request id, fetches the signed request from the public registry, re-verifies the signature and the settlement, and records both the hash and the link. The manual steps below still work.
+
 ## What Cambio requires for "settled"
 
 A signed request is settled only by a transaction whose calldata is exactly:

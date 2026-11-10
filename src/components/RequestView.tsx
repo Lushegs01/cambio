@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { QrCode, Copy, Check, Share2, Download, ArrowRight, AlertCircle, Wallet, ExternalLink, ShieldCheck, Loader2, RefreshCw, PenLine, CloudCheck, CloudOff } from 'lucide-react';
+import { QrCode, Copy, Check, Share2, Download, ArrowRight, AlertCircle, Wallet, ExternalLink, ShieldCheck, Loader2, RefreshCw, PenLine, CloudCheck, CloudOff, MessageCircle, Send as SendIcon, Mail, Code2 } from 'lucide-react';
+import { embedButtonHtml, emailShareUrl, telegramShareUrl, whatsappShareUrl } from '../lib/share';
 import { QRCodeCanvas } from 'qrcode.react';
 import { signTypedData } from 'wagmi/actions';
 import type { Hex } from 'viem';
@@ -347,6 +348,25 @@ export const RequestView: React.FC<RequestViewProps> = ({ wallet, onConnectWalle
                   {copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
+              <div className="grid grid-cols-3 gap-2" aria-label="Send this request">
+                {(() => {
+                  const content = { url, amount: formatTokenDisplay(BigInt(current.request.amount), decimals), memo: current.request.memo };
+                  const cls = 'flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#E2E2E0] dark:border-[#26262B] text-xs font-medium';
+                  return (
+                    <>
+                      <a href={whatsappShareUrl(content)} target="_blank" rel="noopener noreferrer" className={cls}><MessageCircle className="w-3.5 h-3.5" aria-hidden="true" /> WhatsApp</a>
+                      <a href={telegramShareUrl(content)} target="_blank" rel="noopener noreferrer" className={cls}><SendIcon className="w-3.5 h-3.5" aria-hidden="true" /> Telegram</a>
+                      <a href={emailShareUrl(content)} className={cls}><Mail className="w-3.5 h-3.5" aria-hidden="true" /> Email</a>
+                    </>
+                  );
+                })()}
+              </div>
+              <details className="text-xs rounded-xl border border-[#E2E2E0] dark:border-[#26262B] px-3 py-2">
+                <summary className="cursor-pointer font-medium inline-flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5" aria-hidden="true" /> Embed a “Pay with Cambio” button</summary>
+                <p className="mt-2 text-[11px] text-[#777777]">Paste into your website or invoice email. It is a plain link (no script), so it cannot change your page; the payment page verifies your signature.</p>
+                <textarea readOnly aria-label="Pay button HTML" className="mt-2 w-full h-20 p-2 font-mono text-[10px] rounded-lg bg-[#F0F0EE] dark:bg-[#1A1A1D] border border-[#E2E2E0] dark:border-[#26262B]" value={embedButtonHtml({ url, amount: formatTokenDisplay(BigInt(current.request.amount), decimals) })} />
+                <button type="button" onClick={() => copyToClipboard(embedButtonHtml({ url, amount: formatTokenDisplay(BigInt(current.request.amount), decimals) }))} className="mt-1 text-[11px] font-semibold underline">Copy HTML</button>
+              </details>
               <div className="grid grid-cols-3 gap-2">
                 <button type="button" onClick={handleShare} className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#E2E2E0] dark:border-[#26262B] text-xs font-medium">
                   <Share2 className="w-3.5 h-3.5" /> Share

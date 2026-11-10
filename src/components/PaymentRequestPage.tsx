@@ -19,6 +19,9 @@ import { SendModal } from './SendModal';
 import { OpenInMetaMask } from './OpenInMetaMask';
 import { FundAndPayPanel } from './FundAndPayPanel';
 import { spendable } from '../lib/balances';
+import { readLedger } from '../lib/transactions';
+import { findSubmittedPayment, journeySteps, PENDING_RECHECK_MAX, PENDING_RECHECK_MS, syncSettlementToRegistry, type RegistrySync } from '../lib/paymentJourney';
+import { PaymentStepper } from './PaymentStepper';
 import logoImage from '@/logo.png';
 
 interface PaymentRequestPageProps {
@@ -47,6 +50,13 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   /** Double-payment check: was this signed request already paid on-chain? */
   const [dup, setDup] = useState<'idle' | 'checking' | 'clear' | 'uncertain'>('idle');
+  /** The hash was recovered from this device's ledger after a refresh (submitted earlier, not yet confirmed here). */
+  const [recovered, setRecovered] = useState(false);
+  const [recheck, setRecheck] = useState(0);
+  const [registry, setRegistry] = useState<RegistrySync>({ state: 'idle' });
+  /** The registry already holds a verified settlement for this request (no sync needed). */
+  const [registryHasSettlement, setRegistryHasSettlement] = useState(false);
+  const [fundingUsed, setFundingUsed] = useState(false);
   useEffect(() => { const timer = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000); return () => clearInterval(timer); }, []);
 
   const chain = link.kind === 'signed' ? getChainConfig(link.request.chainId) : link.kind === 'unsigned' ? getChainConfig(link.chainId) : null;
@@ -102,12 +112,48 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
   useEffect(() => {
     if (link.kind !== 'signed' || sig !== 'valid' || !paidHash || !chain) return;
     let cancelled = false;
-    setProof(null);
+    if (recheck === 0) setProof(null);
     verifyPaymentTx(publicClientFor(chain.chainId) as never, link.request, paidHash).then((res) => !cancelled && setProof(res));
     return () => {
       cancelled = true;
     };
-  }, [link, paidHash, chain, sig]);
+  }, [link, paidHash, chain, sig, recheck]);
+
+  // 3b. A submitted payment that is not visible yet (or an RPC hiccup) is re-checked automatically, so the
+  //     payer never has to guess whether to pay again.
+  useEffect(() => {
+    if (!paidHash || !proof || (proof.state !== 'not_found' && proof.state !== 'error') || recheck >= PENDING_RECHECK_MAX) return;
+    const timer = setTimeout(() => setRecheck((n) => n + 1), PENDING_RECHECK_MS);
+    return () => clearTimeout(timer);
+  }, [paidHash, proof, recheck]);
+  useEffect(() => setRecheck(0), [paidHash]);
+
+  // 3c. After a refresh, resume a payment this device already submitted for this request.
+  useEffect(() => {
+    if (link.kind !== 'signed' || sig !== 'valid' || !chain || !wallet.address || paidHash) return;
+    const entry = findSubmittedPayment(readLedger(chain.chainId, wallet.address), link.request);
+    if (entry) {
+      setRecovered(true);
+      setPaidHash(entry.hash);
+    }
+  }, [link, sig, chain, wallet.address, paidHash]);
+
+  // 3d. Once the chain confirms the settlement, make sure the merchant's registry records it. The server
+  //     re-reads the transaction itself; this only hands it the hash, and retries while it catches up.
+  useEffect(() => {
+    if (link.kind !== 'signed' || proof?.state !== 'settled' || !paidHash || registryHasSettlement) return;
+    let cancelled = false;
+    const request = link.request;
+    const signature = link.signature;
+    syncSettlementToRegistry({
+      save: () => saveInvoice(request, signature),
+      submit: () => submitSettlement(request.recipient, request.id, paidHash),
+      onProgress: (s) => !cancelled && setRegistry(s),
+    }).then((s) => !cancelled && setRegistry(s));
+    return () => {
+      cancelled = true;
+    };
+  }, [link, proof?.state, paidHash, registryHasSettlement]);
 
   // 4. Before offering payment, look for an existing settlement (registry hint + chain scan). Any hit is
   //    re-verified on-chain by step 3; a failed check is shown as uncertain, never as "unpaid".
@@ -119,6 +165,8 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
       const hinted = await getInvoice(link.request.recipient, link.request.id).catch(() => null);
       if (cancelled) return;
       if (hinted?.settlement && JSON.stringify(hinted.request) === JSON.stringify(link.request)) {
+        setRegistryHasSettlement(true);
+        setRegistry({ state: 'recorded' });
         setPaidHash(hinted.settlement.txHash);
         setDup('clear');
         return;
@@ -149,7 +197,11 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
 
   const isOwn = !!(wallet.address && recipient && wallet.address.toLowerCase() === recipient.toLowerCase());
   const wrongChain = wallet.isConnected && chain && wallet.chainId !== chain.chainId;
-  const payable = !!chain && !!recipient && !expired && !notActive && (link.kind === 'unsigned' || sig === 'valid') && !(proof?.state === 'settled') && dup !== 'checking' && !(paidHash && proof === null);
+  // A known payment hash blocks paying again until the chain says it is definitively not a settlement
+  // (reverted or a mismatch). Pending ("not found yet") and unreadable ("error") both keep Pay disabled:
+  // a second payment would also be charged.
+  const paymentInFlight = !!paidHash && (proof === null || proof.state === 'not_found' || proof.state === 'error' || proof.state === 'settled');
+  const payable = !!chain && !!recipient && !expired && !notActive && (link.kind === 'unsigned' || sig === 'valid') && dup !== 'checking' && !paymentInFlight;
   const proofLink = link.kind === 'signed' && paidHash ? encodePaymentLink(window.location.origin, link.request, link.signature, paidHash) : null;
   // Fund & Pay: a verified signed request the connected wallet cannot cover yet in MUSD.
   const musdBalance = spendable(wallet.balances.musd);
@@ -157,6 +209,21 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
   const needsFunding =
     payable && link.kind === 'signed' && sig === 'valid' && wallet.isConnected && !wrongChain && !isOwn && wallet.dataMode === 'real' &&
     amount !== null && musdBalance !== null && btcBalance !== null && amount > musdBalance;
+
+  useEffect(() => {
+    if (needsFunding) setFundingUsed(true);
+  }, [needsFunding]);
+
+  const steps = journeySteps({
+    signature: sig,
+    closed: expired || notActive || !chain,
+    walletConnected: wallet.isConnected,
+    rightChain: !wrongChain,
+    needsFunding: wallet.isConnected && !wrongChain && musdBalance !== null && amount !== null ? needsFunding : null,
+    fundingUsed,
+    paymentSubmitted: !!paidHash && proof?.state !== 'invalid',
+    settled: proof?.state === 'settled',
+  });
 
   const handleSwitch = async () => {
     if (!chain) return;
@@ -188,6 +255,8 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
           {expired ? 'Expired' : proof?.state === 'settled' ? 'Paid' : 'Awaiting payment'}
         </span>
       </div>
+
+      {link.kind === 'signed' && <PaymentStepper steps={steps} />}
 
       {/* Authenticity */}
       {link.kind === 'signed' ? (
@@ -283,9 +352,35 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
               {proof.result.status === 'reverted' ? 'The transaction reverted.' : proof.result.status === 'mismatch' ? proof.result.reason : ''}
             </Banner>
           ) : proof.state === 'not_found' ? (
-            <Banner tone="warn" icon={<Clock className="w-4 h-4" />} title="Transaction not found yet">It may still be pending. Refresh in a moment.</Banner>
+            <Banner tone="warn" icon={recheck < PENDING_RECHECK_MAX ? <Loader2 className="w-4 h-4 animate-spin" /> : <Clock className="w-4 h-4" />} title={recovered ? 'You already submitted a payment for this request' : 'Payment submitted — waiting for the network'}>
+              Transaction{' '}
+              <a href={getExplorerTxUrl(paidHash, chain.chainId)!} target="_blank" rel="noopener noreferrer" className="underline font-mono">{shortenAddress(paidHash, 10, 6)}</a>{' '}
+              is not in a block yet.{' '}
+              {recheck < PENDING_RECHECK_MAX ? 'Cambio re-checks automatically.' : 'It is taking longer than usual; check the explorer, then reload this page.'}{' '}
+              <strong>Do not pay again</strong> while it is pending: a second payment would also be charged.
+            </Banner>
           ) : (
-            <Banner tone="warn" icon={<AlertCircle className="w-4 h-4" />} title="Could not verify right now">{proof.message}</Banner>
+            <Banner tone="warn" icon={<AlertCircle className="w-4 h-4" />} title="Could not verify right now">
+              {proof.message} {recheck < PENDING_RECHECK_MAX ? 'Retrying automatically.' : ''} Your funds are not affected by this check.
+            </Banner>
+          )}
+          {proof?.state === 'settled' && link.kind === 'signed' && (
+            <p className="mt-2 text-[11px] text-[#777777] dark:text-[#A0A0A0] flex items-center gap-1.5" role="status" aria-live="polite">
+              {registry.state === 'recorded' ? (
+                <><Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" /> Recorded in the merchant&rsquo;s invoice registry (server re-verified on-chain).</>
+              ) : registry.state === 'syncing' ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> Notifying the merchant&rsquo;s invoice registry…</>
+              ) : registry.state === 'rejected' ? (
+                <><AlertCircle className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" /> The registry did not record it: {registry.message} The on-chain payment above is unaffected.</>
+              ) : registry.state === 'unavailable' ? (
+                <><AlertCircle className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" /> {registry.message} Your payment is confirmed on-chain either way.</>
+              ) : null}
+            </p>
+          )}
+          {proof?.state === 'settled' && link.kind === 'signed' && (
+            <a href={`#proof/${link.request.recipient}/${link.request.id}`} className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> View receipt and independent proof
+            </a>
           )}
           {proofLink && proof?.state === 'settled' && (
             <button type="button" onClick={() => flash('proof', proofLink)} className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#E2E2E0] dark:border-[#26262B] text-xs font-semibold">
@@ -332,7 +427,7 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
             className="w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
-            {link.kind === 'signed' && sig !== 'valid' ? 'Waiting for signature check' : needsFunding ? 'Add MUSD above to pay this request' : amount !== null ? `Review payment of ${formatTokenDisplay(amount, chain.tokens.MUSD.decimals)} MUSD` : 'Choose amount and pay'}
+            {link.kind === 'signed' && sig !== 'valid' ? 'Waiting for signature check' : paymentInFlight ? 'Payment pending — waiting for the network' : needsFunding ? 'Add MUSD above to pay this request' : amount !== null ? `Review payment of ${formatTokenDisplay(amount, chain.tokens.MUSD.decimals)} MUSD` : 'Choose amount and pay'}
           </button>
           </>
         )}
@@ -352,14 +447,9 @@ export const PaymentRequestPage: React.FC<PaymentRequestPageProps> = ({ link, wa
         initialAmount={lockedRequest || amount === null ? undefined : formatUnitsExact(amount, chain?.tokens.MUSD.decimals ?? 18)}
         initialMemo={lockedRequest ? undefined : memo}
         onRequestPaid={(hash) => {
+          // The page re-verifies the hash on-chain (step 3), then records it in the merchant's registry (step 3d).
+          setRecovered(false);
           setPaidHash(hash);
-          // Record it in the merchant's invoice registry. The server verifies the signature and the payment on-chain itself.
-          if (link.kind === 'signed') {
-            saveInvoice(link.request, link.signature)
-              .catch(() => undefined)
-              .then(() => submitSettlement(link.request.recipient, link.request.id, hash))
-              .catch(() => undefined);
-          }
         }}
       />
     </Shell>

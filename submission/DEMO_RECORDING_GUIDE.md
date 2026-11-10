@@ -1,5 +1,8 @@
 # Demo recording guide
 
+> **Superseded on 2026-11-08 by [`submission/WAVE2_DEMO_GUIDE.md`](/submission/WAVE2_DEMO_GUIDE.md).** Kept for history; where the two differ, the newer document is current.
+
+
 ## Before recording (owner actions)
 
 1. **Deploy the Wave 2 build.** Merge the branch, let Vercel deploy, and deploy the Firestore index:

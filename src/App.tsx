@@ -21,6 +21,8 @@ import { ActivityView } from './components/ActivityView';
 import { SettingsView } from './components/SettingsView';
 import { RequestView } from './components/RequestView';
 import { PaymentRequestPage } from './components/PaymentRequestPage';
+import { ProofPage } from './components/ProofPage';
+import { parseProofRoute, type ProofRoute } from './lib/proofViewer';
 import { NotificationsView } from './components/NotificationsView';
 import { SwapView } from './components/SwapView';
 import { LandingPage } from './components/LandingPage';
@@ -40,7 +42,9 @@ import { getIdentityHealth, lookupAddress, type IdentityHealth } from './service
 
 const VIEWS: NavItemKey[] = ['overview', 'activity', 'request', 'swap', 'notifications', 'settings'];
 
-function routeFromLocation(): { route: 'landing' | 'app' | 'pay'; view: NavItemKey; link: ParsedPaymentLink | null } {
+function routeFromLocation(): { route: 'landing' | 'app' | 'pay' | 'proof'; view: NavItemKey; link: ParsedPaymentLink | null; proof?: ProofRoute | null } {
+  const proof = parseProofRoute(window.location.href);
+  if (proof) return { route: 'proof', view: 'overview', link: null, proof };
   const link = parsePaymentLink(window.location.href);
   if (link) return { route: 'pay', view: 'overview', link };
   const path = window.location.pathname.toLowerCase();
@@ -76,6 +80,7 @@ export default function App() {
   const [currentRoute, setCurrentRoute] = useState(initial.route);
   const [activeView, setActiveView] = useState<NavItemKey>(initial.view);
   const [paymentLink, setPaymentLink] = useState<ParsedPaymentLink | null>(initial.link);
+  const [proofRoute, setProofRoute] = useState<ProofRoute | null>(initial.proof ?? null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBalanceMasked, setIsBalanceMasked] = useState(false);
   const [dataMode, setDataMode] = useState<'real' | 'demo'>('real');
@@ -203,6 +208,7 @@ export default function App() {
       const r = routeFromLocation();
       setCurrentRoute(r.route);
       setPaymentLink(r.link);
+      setProofRoute(r.proof ?? null);
       if (r.route === 'app') setActiveView(r.view);
     };
     window.addEventListener('popstate', onNav);
@@ -345,6 +351,10 @@ export default function App() {
       onDemoSend={handleDemoSend}
     />
   );
+
+  if (currentRoute === 'proof' && proofRoute) {
+    return <ProofPage key={`${proofRoute.recipient}:${proofRoute.id}:${proofRoute.tx ?? ''}`} route={proofRoute} onGoToDashboard={() => goApp('overview')} />;
+  }
 
   if (currentRoute === 'pay' && paymentLink) {
     return (

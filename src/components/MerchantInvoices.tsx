@@ -7,7 +7,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CloudCheck, CloudOff, Download, ExternalLink, Loader2, LogIn, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, CloudCheck, CloudOff, Download, ExternalLink, Loader2, LogIn, RefreshCw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { signMessage } from 'wagmi/actions';
 import type { Hex } from 'viem';
 import type { MezoChainConfig } from '../config/chains';
@@ -31,6 +31,7 @@ import {
   type InvoiceRow,
   type LocalCheck,
 } from '../lib/invoices';
+import { MerchantProCard } from './MerchantProCard';
 import { completeMerchantSession, InvoiceApiError, listAllInvoices, saveInvoice, startMerchantSession, submitSettlement, type ServerInvoice } from '../services/invoiceClient';
 
 const musd = (v: bigint) => formatTokenDisplay(v, 18, { maxFractionDigits: 2, minFractionDigits: 2 });
@@ -47,6 +48,8 @@ const FILTERS: { key: InvoiceFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'pending', label: 'Pending' },
   { key: 'paid', label: 'Paid' },
+  { key: 'late', label: 'Late' },
+  { key: 'duplicate', label: 'Duplicate' },
   { key: 'expired', label: 'Expired' },
   { key: 'unknown', label: 'Unknown' },
 ];
@@ -185,6 +188,7 @@ export const MerchantInvoices: React.FC<Props> = ({ wallet, chain, local, onLoca
         )}
       </div>
       {!token && <p className="text-[11px] text-[#777777] -mt-2 flex items-center gap-1.5"><CloudOff className="w-3.5 h-3.5" /> Showing requests saved on this device. Signing in is a free wallet signature (no transaction).</p>}
+      {token && <MerchantProCard token={token} wallet={wallet} chain={chain} />}
       {syncError && <p role="alert" className="text-xs text-amber-700 dark:text-amber-400">{syncError}</p>}
       {truncated && <p className="text-xs text-amber-700 dark:text-amber-400">Showing the newest 1,000 invoices.</p>}
 
@@ -234,6 +238,11 @@ export const MerchantInvoices: React.FC<Props> = ({ wallet, chain, local, onLoca
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
+                  {r.settlementTx && r.synced && (
+                    <a href={`#proof/${r.request.recipient}/${r.request.id}`} className="p-1 text-emerald-700 hover:text-emerald-900 dark:text-emerald-400" aria-label="Open the public settlement proof" title="Public proof anyone can verify without a wallet">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </a>
+                  )}
                   {r.settlementTx && (
                     <a href={explorerTxUrl(chain, r.settlementTx)} target="_blank" rel="noopener noreferrer" className="p-1 text-[#777777] hover:text-[#111111] dark:hover:text-[#FFFFFF]" aria-label="View settlement transaction">
                       <ExternalLink className="w-3.5 h-3.5" />

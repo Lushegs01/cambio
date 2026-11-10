@@ -1,5 +1,8 @@
 # Security review (Wave 2, 2026-11-05)
 
+> **Superseded on 2026-11-08 by [`docs/WAVE2_SECURITY_REPORT.md`](/docs/WAVE2_SECURITY_REPORT.md).** Kept for history; where the two differ, the newer document is current.
+
+
 Scope: the payment, swap, Fund & Pay, invoice-registry and identity paths in this repository at the commit that adds this file. This is a **targeted engineering review by the implementation agent, not an independent audit.** No third party has audited Cambio. Mainnet stays disabled.
 
 ## Findings fixed in this wave

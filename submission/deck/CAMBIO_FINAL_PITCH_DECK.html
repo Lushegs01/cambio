@@ -95,8 +95,9 @@
         <li><b>EIP-712 signed invoices.</b> The recipient, amount, token, chain, ID and expiry are signed by the merchant's wallet; the payer verifies the signature before Pay appears.</li>
         <li><b>Verified @usernames.</b> Each name is bound by a server-verified SIWE signature.</li>
         <li><b>Fund &amp; Pay.</b> If the payer is short, Cambio sizes a BTC→MUSD swap for exactly the shortfall on the same page.</li>
-        <li><b>Settlement proof.</b> The payment carries the invoice ID in its calldata; anyone can re-check the receipt and the <code>Transfer</code> event.</li>
-        <li><b>Invoice registry.</b> Syncs across devices after a wallet sign-in; "paid" is only ever set by on-chain verification. Totals, filters, CSV export.</li>
+        <li><b>Public proof page.</b> The payment carries the invoice ID in its calldata; anyone opens a proof link and the browser re-runs every check, no wallet needed.</li>
+        <li><b>Invoice registry.</b> Syncs across devices; "paid" is only ever set by on-chain verification. Late/duplicate views, CSV.</li>
+        <li><b>Share anywhere.</b> WhatsApp, Telegram, email, QR, embeddable pay button — always the exact signed link.</li>
       </ul>
     </div>
     <img src="../screenshots/desktop-merchant-invoices.png" class="shot" style="width:560px;height:420px;object-fit:cover;object-position:top" />
@@ -109,17 +110,17 @@
   <div class="kicker">The flagship journey (real screens)</div>
   <h2 style="margin-bottom:14px">Invoice → fund with BTC → pay → verified</h2>
   <div class="row" style="align-items:flex-start">
-    <img src="../screenshots/phone-signed-request.png" class="shot" style="height:500px" />
+    <img src="../screenshots/phone-payment-stepper.png" class="shot" style="height:500px" />
     <img src="../screenshots/phone-fund-and-pay.png" class="shot" style="height:500px;width:250px;object-fit:cover;object-position:0 52%" />
     <div style="flex:1">
       <ol style="padding-left:20px">
         <li><p>The merchant signs an invoice. It's free, and the link is saved to the registry.</p></li>
-        <li><p>The customer opens it: the signature is verified and Cambio checks the invoice is not already paid.</p></li>
+        <li><p>The customer opens it: a stepper guides them; the signature is verified and Cambio checks the invoice is not already paid.</p></li>
         <li><p>They're 53.85 MUSD short, so Cambio quotes 0.00068876 BTC in, with at least 53.85 MUSD out (router-enforced). The Mezo oracle value is shown alongside.</p></li>
         <li><p>Exact approval → swap → pay. Each step is its own wallet prompt.</p></li>
-        <li><p>The server re-reads the chain and marks the invoice <b>Paid · verified</b>.</p></li>
+        <li><p>The server re-reads the chain and marks the invoice <b>Paid · verified</b>; both sides get a public proof link. A refresh mid-payment resumes it, and Pay stays locked so nobody pays twice.</p></li>
       </ol>
-      <p class="note">The Fund &amp; Pay screen shows the real @lushegs wallet balance (796.1477 MUSD) against an 850 MUSD test invoice. Read-only capture; nothing was broadcast.</p>
+      <p class="note">Left: production build, live testnet reads, test wallet (Nov 8). The Fund &amp; Pay screen shows the real @lushegs wallet balance (796.1477 MUSD) against an 850 MUSD test invoice. Read-only capture; nothing was broadcast.</p>
     </div>
   </div>
   <div class="foot"><span>Cambio · Wave 2</span><span>5</span></div>
@@ -155,9 +156,12 @@
     <tr><th>Proof</th><th>Transaction</th><th>What was checked</th><th>Verdict</th></tr>
     <tr><td>MUSD transfer<br/><span class="note">10 MUSD, @solo → @lushegs</span></td><td class="mono">0x8e39d309…5065e<br/><span class="note">block 16390715</span></td><td>Targets MUSD; <code>transfer</code> calldata; success; matching <code>Transfer</code> event; sender, recipient and amount</td><td><span class="pill pass">PASS</span></td></tr>
     <tr><td>BTC → MUSD swap<br/><span class="note">0.01 BTC → 786.1477 MUSD</span></td><td class="mono">0x4af2b0f0…33f6e<br/><span class="note">block 16382064</span></td><td>Mezo Router; BTC→MUSD route via PoolFactory; BTC into the pool; MUSD out ≥ router minimum (782.2170)</td><td><span class="pill pass">PASS</span></td></tr>
-    <tr><td>Signed-invoice settlement</td><td class="mono">not yet recorded</td><td>No transaction with Cambio's <code>CMB2</code> invoice-ID calldata exists yet. An e2e test proves the wallet is asked to sign exactly that calldata.</td><td><span class="pill pend">PENDING</span></td></tr>
+    <tr><td>Signed-invoice settlement</td><td class="mono">not yet recorded</td><td>No transaction with Cambio's <code>CMB2</code> invoice-ID calldata exists yet (re-scanned Nov 8). E2E proves the wallet is asked to sign exactly that calldata; <code>--discover</code> records it automatically once paid.</td><td><span class="pill pend">PENDING</span></td></tr>
   </table>
-  <p style="margin-top:22px"><code>npm run verify:evidence</code> → PASS / FAIL / INCONCLUSIVE. Unreadable data is never reported as a pass. <span class="muted">Found and fixed along the way: the public testnet RPC returned null for 25–33% of mined receipts.</span></p>
+  <div class="row" style="margin-top:14px;align-items:flex-start">
+    <p style="flex:1;margin:0"><code>npm run verify:evidence</code> → PASS / FAIL / INCONCLUSIVE; unreadable data is never a pass. The same checks run in the browser on every proof page. <b>Forgery test:</b> claiming the real transfer above as payment of a different signed invoice is rejected — it is a genuine MUSD transfer, but to the wrong recipient and without the invoice ID.</p>
+    <img src="../screenshots/phone-proof-rejects-plain-transfer.png" class="shot" style="width:220px;height:200px;object-fit:cover;object-position:top" />
+  </div>
   <div class="foot"><span>explorer.test.mezo.org · submission/evidence/</span><span>7</span></div>
 </section>
 
@@ -166,15 +170,15 @@
   <div class="kicker">Business model (hypotheses to validate)</div>
   <h2>Free to get paid. Merchant Pro for running a business on it.</h2>
   <div class="row">
-    <div class="card" style="flex:1"><h3>Personal: free</h3><p>Usernames, signed invoices, QR codes, settlement proof, Fund &amp; Pay</p></div>
-    <div class="card" style="flex:1"><h3>Merchant Pro: $9/mo in MUSD <span class="pill info">hypothesis</span></h3><p>Cross-device registry, reconciliation, CSV, duplicate-payment alerts, reminders and branded links (to build)</p></div>
+    <div class="card" style="flex:1"><h3>Free: everything that exists today</h3><p>Usernames, signed invoices, sharing, Fund &amp; Pay, proof pages, merchant dashboard with sync and CSV</p></div>
+    <div class="card" style="flex:1"><h3>Merchant Pro: 9 MUSD / 30 days <span class="pill info">price = hypothesis</span></h3><p><b>Implemented on testnet.</b> Unlocks a server-verified reconciliation report. Reminders and branding: to build.</p></div>
     <div class="card" style="flex:1"><h3>Volume tier (later)</h3><p>0.25% of verified volume above $2k/month <span class="note">(to test)</span></p></div>
   </div>
   <div class="row" style="margin-top:18px">
-    <div class="card" style="flex:1.3"><h3>How Cambio actually collects</h3><p>A non-custodial transfer pays Cambio nothing. Pro is billed with <b>Cambio's own signed invoice</b>, and the server unlocks it after a <b>verified settlement</b>, so no new contracts are needed. In-payment and routing fees would need an audited contract and are not built.</p></div>
-    <div class="card" style="flex:1"><h3>Unit economics (estimates)</h3><p>About $30/month fixed at pilot scale, about $270/month at scale. Roughly 4 Pro merchants cover the pilot and 30 cover scale. Marginal cost per invoice is under a cent.</p></div>
+    <div class="card" style="flex:1.3"><h3>How Cambio actually collects (built)</h3><p>The server issues an order (price, owner treasury, random id). The merchant's own wallet pays <code>transfer(treasury, price) ‖ CMB2 ‖ orderId</code>; the server verifies it on-chain and extends Pro atomically, once. No keys, no contracts, <b>no fee on payments</b>. Testnet: proves the mechanism, not revenue — no subscription paid yet.</p></div>
+    <div class="card" style="flex:1"><h3>Unit economics (estimates)</h3><p>About $10–30/month fixed at pilot scale, about $115–265/month at scale. Roughly 4 Pro merchants cover the pilot and 15–30 cover scale. Marginal cost per invoice is under a cent.</p></div>
   </div>
-  <div class="foot"><span>docs/BUSINESS_MODEL.md</span><span>8</span></div>
+  <div class="foot"><span>docs/WAVE2_BUSINESS_MODEL.md · server/billing/</span><span>8</span></div>
 </section>
 
 <!-- 9 -->
@@ -184,13 +188,13 @@
   <div class="row">
     <div class="card" style="flex:1"><div class="big">0</div><p>paying customers, revenue, or completed interviews. We claim none.</p></div>
     <div class="card" style="flex:1"><div class="big">2 / 3</div><p>on-chain proofs verified (transfer, swap); signed settlement pending</p></div>
-    <div class="card" style="flex:1"><div class="big">Ready</div><p>Consent form, interview and usability scripts, and <code>pilot:metrics</code>, which counts only verifiable transactions</p></div>
+    <div class="card" style="flex:1"><div class="big">Ready</div><p>Consent, onboarding, observation and case-study templates; <code>pilot:metrics</code> counts only verifiable transactions; <code>check:submission</code> stays BLOCKED until real participants exist</p></div>
   </div>
   <table style="margin-top:20px">
     <tr><th>Pilot goal (next 4 weeks)</th><th>Target</th><th>Measured by</th></tr>
     <tr><td>Consenting testnet merchants</td><td>3–5</td><td>consent forms</td></tr>
     <tr><td>Verified signed-invoice settlements · distinct payers</td><td>≥ 30 · ≥ 15</td><td><code>npm run pilot:metrics</code> (chain-derived only)</td></tr>
-    <tr><td>Interviews · usability sessions · willing to pay ≥ $9</td><td>10 · 5 · ≥ 3</td><td>docs/USER_RESEARCH.md</td></tr>
+    <tr><td>Interviews · usability sessions · willing to pay ≥ 9 MUSD</td><td>10 · 5 · ≥ 3</td><td>docs/WAVE2_PRODUCT_VALIDATION.md</td></tr>
   </table>
   <div class="foot"><span>Goals, not results</span><span>9</span></div>
 </section>
@@ -201,7 +205,7 @@
   <h2 style="margin-bottom:14px">Non-custodial, composable, verified at every step</h2>
   <div class="row">
     <div class="card" style="flex:1.1">
-      <p class="mono" style="font-size:13px;line-height:1.55;color:#222;margin:0">React 19 · wagmi · viem  ──signs──▶  wallet<br/>  │ reads/receipts (retry on "not found")<br/>  ├──▶ Mezo RPC · Multicall3 · explorer<br/>  └──▶ /api (Express, same origin)<br/>        ├ identity: SIWE usernames<br/>        ├ invoices: signed-request registry<br/>        │   settlement = server re-reads chain<br/>        └ Firestore │ SQLite │ memory(dev)</p>
+      <p class="mono" style="font-size:13px;line-height:1.55;color:#222;margin:0">React 19 · wagmi · viem  ──signs──▶  wallet<br/>  │ reads/receipts (retry on "not found")<br/>  ├──▶ Mezo RPC · Multicall3 · explorer<br/>  └──▶ /api (Express, same origin)<br/>        ├ identity: SIWE usernames<br/>        ├ invoices: signed-request registry<br/>        │   settlement = server re-reads chain<br/>        ├ billing: Pro orders, verified on-chain<br/>        └ Firestore │ SQLite │ memory(dev)</p>
       <p class="note" style="margin-top:10px">No custom smart contracts. No keys, no custody.</p>
     </div>
     <div class="card" style="flex:1">
@@ -213,11 +217,11 @@
         <li>Invoices keyed (recipient, id); SIWE session for listing</li>
         <li>CSP, rate limits, deny-by-default Firestore rules</li>
       </ul>
-      <h3 style="margin-top:12px">Tests (2026-11-05)</h3>
-      <p style="font-size:15px">250 unit/integration · 19 Firestore emulator · 20 browser e2e (production build) · 7 live read-only · ESLint 0 warnings · CI on every push. <b>Not audited.</b></p>
+      <h3 style="margin-top:12px">Tests (2026-11-08)</h3>
+      <p style="font-size:15px">305 unit/integration/API · 26 Firestore emulator · 26 browser e2e (production build, live testnet reads, never broadcasts) · 7 live read-only · ESLint 0 warnings · CI on main, every PR and daily. Fixed this wave: a pay-while-pending double-payment bug. <b>Not audited.</b></p>
     </div>
   </div>
-  <div class="foot"><span>docs/ARCHITECTURE.md · docs/SECURITY_REVIEW.md</span><span>10</span></div>
+  <div class="foot"><span>docs/ARCHITECTURE.md · docs/WAVE2_SECURITY_REPORT.md</span><span>10</span></div>
 </section>
 
 <!-- 11 -->
@@ -242,7 +246,7 @@
   <h2 style="color:#fff">Next: real merchants, real proofs, then mainnet</h2>
   <div class="row">
     <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By Dec 15</h3><p>Signed-settlement proof · redeploy · 3–5 merchant pilot with chain-derived metrics · 10 interviews</p></div>
-    <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By Feb 15</h3><p>Merchant Pro billing via signed invoices · reminders and webhooks · Telegram bot that creates signed invoices</p></div>
+    <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By Feb 15</h3><p>Enable Merchant Pro in production · reminders and webhooks · Telegram bot that creates signed invoices</p></div>
     <div class="card" style="flex:1;background:#1a1a1c;border-color:#2a2a2e"><h3 style="color:#fff">By May 15</h3><p>Audited checkout contract (single-use invoices, fees) · optional borrowing route · mainnet only after review</p></div>
   </div>
   <p style="margin-top:34px"><b style="color:#fff">Lushegs</b>, solo developer: product, design and engineering. github.com/Lushegs01</p>
