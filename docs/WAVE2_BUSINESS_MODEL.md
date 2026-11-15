@@ -127,6 +127,6 @@ Why the server issues an order instead of the treasury signing an invoice: the s
 ## 11. Roadmap
 
 See `submission/WAVE_3_ROADMAP.md`.
-- **Next:** the signed-settlement proof, the pilot, reminders and webhooks.
+- **Next:** the pilot, reminders and webhooks.
 - **Then:** a Telegram bot.
 - **Only with an audit budget:** a checkout contract for enforced single-use invoices and in-payment fees.

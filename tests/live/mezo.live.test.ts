@@ -56,6 +56,21 @@ describe('live Mezo Testnet (read-only)', () => {
     expect(checkMusdTransfer(chain, transfer, t.tx, t.receipt, t.blockTimestampMs).verdict).toBe('PASS');
     expect(checkBtcToMusdSwap(chain, swap, s.tx, s.receipt, s.blockTimestampMs).verdict).toBe('PASS');
   });
+
+  it('the recorded signed-invoice settlement still verifies (signature + calldata + receipt + Transfer)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { checkSignedSettlement } = await import('../../src/lib/evidence');
+    const { parsePaymentLink, verifyRequestSignature } = await import('../../src/lib/paymentRequest');
+    const doc = JSON.parse(readFileSync('submission/evidence/transaction-proofs.json', 'utf8')) as { proofs: { kind: string; hash: string | null; paymentLink?: string | null }[] };
+    const proof = doc.proofs.find((p) => p.kind === 'signed_request_settlement');
+    if (!proof?.hash || !proof.paymentLink) throw new Error('No signed settlement is recorded');
+    const parsed = parsePaymentLink(proof.paymentLink);
+    if (!parsed || parsed.kind !== 'signed') throw new Error('Recorded payment link is not a signed request');
+    const valid = await verifyRequestSignature(parsed.request, parsed.signature);
+    const f = await fetchEvidence(client as unknown as EvidenceClient, proof.hash as Hex);
+    if (!f.ok) throw new Error(`RPC did not return the settlement: ${f.reason}`);
+    expect(checkSignedSettlement(chain, proof.hash as Hex, parsed.request, valid, f.tx, f.receipt, f.blockTimestampMs).verdict).toBe('PASS');
+  });
 });
 
 describe('live Fund & Pay sizing (read-only)', () => {

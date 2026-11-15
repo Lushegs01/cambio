@@ -11,9 +11,9 @@ Run on 2026-11-08 in this environment: Node 24.22.1, Chromium from Playwright 1.
 | Unit, integration, API, UI | `npm test` | ✅ **305 / 305** (32 files) | No: fake chain readers and stores. These are **mock tests**, not on-chain proof |
 | Firestore rules and stores (emulator) | `npm run test:rules` | ✅ **26 / 26** | No: Firestore emulator, real transactions |
 | Browser e2e: production build served by `server.js`, Chromium desktop + Pixel 7 | `npm run test:e2e` | ✅ **26 / 26** (3 opt-in screenshot specs skipped) | **Reads live Mezo Testnet**. The injected wallet signs real EIP-712/SIWE messages but **declines every transaction**, so nothing is broadcast |
-| Live read-only protocol checks | `npm run test:live` | ✅ **7 / 7** | Yes, read-only |
+| Live read-only protocol checks (incl. the recorded settlement) | `npm run test:live` | ✅ **8 / 8** | Yes, read-only |
 | Contract and pool addresses (testnet + mainnet) | `npm run verify:chain` | ✅ all checks pass | Yes, read-only |
-| Recorded evidence | `npm run verify:evidence` | MUSD transfer **PASS** · BTC→MUSD swap **PASS** · signed settlement **INCONCLUSIVE (pending)**; exit 2 | Yes, read-only |
+| Recorded evidence | `npm run verify:evidence` | MUSD transfer **PASS** · BTC→MUSD swap **PASS** · signed-invoice settlement **PASS** (recorded 2026-11-15); exit 0 | Yes, read-only |
 | Production build | `npm run build` | ✅ | — |
 | Deck layout | `npm run deck:check` | ✅ 12 / 12 slides fit | — |
 | Submission readiness | `npm run check:submission` | see `submission/WAVE2_FINAL_READINESS.md` | Yes, read-only |
@@ -49,7 +49,7 @@ Unit tests on Node 22: the two SQLite suites fail by design, because they need `
 | 12 | Transaction reverts | Unit only (`verifySettlement`, billing API) | **Mock only.** A revert cannot be produced without broadcasting |
 | 13 | Invoice expires | `expired and malformed links are not payable` | |
 | 14 | Already paid | Unit (`requestSettlement`, journey); proof viewer "verified" path | **Mock only.** No real settlement exists yet |
-| 15 | Proof viewer verifies a genuine settlement | Unit (`proofViewer`) | **Mock only until owner action §1.** The live e2e covers the *rejection* of a real non-settlement |
+| 15 | Proof viewer verifies a genuine settlement | Unit (`proofViewer`); live: the [proof page](https://cambio-five.vercel.app/#proof/0x4AC25baC45C06362Cd1a90A61588dA73AB058f21/0x8cabe0bfc705e7808dcedb7a9ecaa594) for the recorded settlement | The live e2e covers the *rejection* of a real non-settlement |
 | 16 | Merchant sees synchronized status | `a signed invoice is stored server-side and recovered on another device…` | |
 | 17 | Unauthorized access rejected | API tests (401/404 across merchants); production probe | |
 

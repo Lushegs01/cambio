@@ -39,7 +39,9 @@ It reports PASS, FAIL or BLOCKED. A step below is done only when its line turns 
 
 ## 1. Record the signed-invoice settlement (about 10 minutes, two wallets) — the P0 judge requirement
 
-This is the one piece of on-chain evidence the judges asked for that does not exist yet. No transaction with Cambio's `CMB2` request-id suffix exists on-chain today. The agent re-scanned @lushegs and @solo on 2026-11-08 and found none.
+> **Done on 2026-11-15:** [`0x7256…5caa`](https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa), recorded with `--discover` (PASS). The steps below stay as a guide for recording more payments, e.g. one funded with Fund & Pay.
+
+This was the one piece of on-chain evidence the judges asked for that did not exist yet. No transaction with Cambio's `CMB2` request-id suffix exists on-chain today. The agent re-scanned @lushegs and @solo on 2026-11-08 and found none.
 
 You need:
 - **Merchant wallet A** (for example @lushegs, `0x3c40…FC81`). It needs a little BTC for gas.

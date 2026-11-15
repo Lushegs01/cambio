@@ -59,7 +59,7 @@ The app shell is dominated by Reown AppKit, wagmi and viem. They already load la
 | `npm test` (unit/integration/API/UI) | 305 | about 21 s |
 | `npm run test:rules` (Firestore emulator) | 26 | about 45 s |
 | `npm run test:e2e` (production build, Chromium desktop + Pixel 7) | 26 (+3 opt-in screenshot specs, skipped by default) | about 1.5 min |
-| `npm run test:live` (read-only live chain) | 7 | about 6 s |
+| `npm run test:live` (read-only live chain) | 8 | about 7 s |
 
 ## Not measured (and not claimed)
 
