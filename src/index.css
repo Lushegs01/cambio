@@ -4,6 +4,7 @@
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
   --font-mono: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -233,6 +234,95 @@ input, select, textarea, button, code {
   will-change: transform, opacity;
 }
 
+/* ---------- Landing page: pastel iridescent mesh + glass ---------- */
+.landing-mesh {
+  background:
+    radial-gradient(38% 55% at 20% 48%, rgba(246, 245, 160, 0.95), transparent 72%),
+    radial-gradient(34% 40% at 48% 6%, rgba(246, 214, 232, 0.85), transparent 72%),
+    radial-gradient(36% 52% at 76% 64%, rgba(160, 166, 248, 0.9), transparent 72%),
+    radial-gradient(30% 48% at 96% 22%, rgba(176, 230, 244, 0.95), transparent 72%),
+    radial-gradient(28% 40% at 2% 92%, rgba(250, 196, 222, 0.7), transparent 72%),
+    #F6F7FC;
+  background-size: 140% 140%;
+  animation: meshDrift 22s ease-in-out infinite alternate;
+}
+.dark .landing-mesh {
+  background:
+    radial-gradient(38% 55% at 20% 48%, rgba(170, 176, 40, 0.30), transparent 72%),
+    radial-gradient(34% 40% at 48% 6%, rgba(200, 90, 160, 0.26), transparent 72%),
+    radial-gradient(36% 52% at 76% 64%, rgba(96, 100, 240, 0.40), transparent 72%),
+    radial-gradient(30% 48% at 96% 22%, rgba(40, 170, 210, 0.32), transparent 72%),
+    radial-gradient(28% 40% at 2% 92%, rgba(210, 80, 150, 0.22), transparent 72%),
+    #0B0B12;
+  background-size: 140% 140%;
+}
+@keyframes meshDrift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 60%; }
+}
+
+.landing-glow {
+  background:
+    radial-gradient(40% 30% at 10% 20%, rgba(250, 210, 230, 0.55), transparent 70%),
+    radial-gradient(35% 30% at 90% 45%, rgba(170, 176, 250, 0.45), transparent 70%),
+    radial-gradient(40% 30% at 25% 80%, rgba(246, 240, 170, 0.45), transparent 70%),
+    radial-gradient(40% 30% at 85% 95%, rgba(170, 236, 240, 0.4), transparent 70%);
+}
+.dark .landing-glow {
+  background:
+    radial-gradient(40% 30% at 10% 20%, rgba(200, 80, 150, 0.14), transparent 70%),
+    radial-gradient(35% 30% at 90% 45%, rgba(96, 100, 240, 0.18), transparent 70%),
+    radial-gradient(40% 30% at 25% 80%, rgba(170, 176, 40, 0.10), transparent 70%),
+    radial-gradient(40% 30% at 85% 95%, rgba(40, 170, 210, 0.14), transparent 70%);
+}
+
+.landing-glass {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 24px 60px -24px rgba(40, 44, 90, 0.18);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  backdrop-filter: blur(22px) saturate(1.4);
+}
+.dark .landing-glass {
+  background: rgba(22, 22, 32, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.6);
+}
+
+.landing-iridescent {
+  background:
+    radial-gradient(120% 90% at 20% 15%, rgba(255, 255, 255, 0.75), transparent 45%),
+    linear-gradient(135deg, #E6FF8A 0%, #7DEBD0 30%, #5BC8F5 55%, #8E8CFF 78%, #F49BE0 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 -6px 14px rgba(70, 60, 160, 0.18) inset, 0 12px 28px -10px rgba(91, 120, 245, 0.45);
+}
+.landing-dot {
+  background: linear-gradient(135deg, #E6FF8A, #5BC8F5 55%, #8E8CFF);
+}
+.landing-text-iridescent {
+  background: linear-gradient(100deg, #6F7BF7 0%, #3FB6E8 35%, #5ED6A6 60%, #C46BE0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--float-rot, 0deg)); }
+  50% { transform: translate3d(0, -14px, 0) rotate(calc(var(--float-rot, 0deg) + 6deg)); }
+}
+.animate-float {
+  animation: floatY 9s ease-in-out infinite;
+}
+
+.landing-reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
 /* Reduced motion accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
@@ -240,5 +330,9 @@ input, select, textarea, button, code {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .landing-reveal {
+    opacity: 1;
+    transform: none;
   }
 }
