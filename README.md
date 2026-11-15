@@ -42,9 +42,9 @@ All three proofs are re-verified from the Mezo RPC with `npm run verify:evidence
 | --- | --- | --- |
 | MUSD transfer, 10 MUSD from @solo to @lushegs | [`0x8e39d309…5065e`](https://explorer.test.mezo.org/tx/0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e) | ✅ PASS |
 | BTC → MUSD swap via the Mezo Router, 0.01 BTC → 786.1477 MUSD (min 782.2170) | [`0x4af2b0f0…33f6e`](https://explorer.test.mezo.org/tx/0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e) | ✅ PASS |
-| Payment settling an EIP-712 signed request (`CMB2` calldata) | not yet recorded | ⏳ PENDING (owner action): [10-minute runbook](submission/WAVE2_OWNER_ACTIONS.md#1-record-the-signed-invoice-settlement-about-10-minutes-two-wallets--the-p0-judge-requirement) |
+| Payment settling an EIP-712 signed invoice (`CMB2` calldata), 5 MUSD from @irebami to @cambomerchant | [`0x7256e1e2…35caa`](https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa) | ✅ PASS |
 
-The signed-settlement proof is honestly pending. A re-scan on 2026-11-08 found no transaction with Cambio's request-ID suffix for the known wallets. An end-to-end test proves the app asks the wallet to sign exactly `transfer(recipient, amount) ‖ CMB2 ‖ requestId`. Once the owner pays a signed invoice in the app, `npm run verify:evidence -- --discover <merchant> --write` finds it by its on-chain request id, fetches the signed request from the public registry, re-verifies both, and records it.
+The signed-invoice settlement was found and recorded with `npm run verify:evidence -- --discover 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21 --write`. The command finds payments carrying a Cambio request id, fetches each signed request from the public registry, and re-verifies both the merchant's EIP-712 signature and the settlement. Anyone can check it in a browser, with no wallet, on the [public proof page](https://cambio-five.vercel.app/#proof/0x4AC25baC45C06362Cd1a90A61588dA73AB058f21/0x8cabe0bfc705e7808dcedb7a9ecaa594).
 
 ## Mezo integration (more than an ERC-20 transfer)
 
@@ -207,12 +207,11 @@ See [docs/WAVE2_BUSINESS_MODEL.md](docs/WAVE2_BUSINESS_MODEL.md) and [docs/WAVE2
 ## Roadmap
 
 See [submission/WAVE_3_ROADMAP.md](submission/WAVE_3_ROADMAP.md). The next items are:
-1. Record the signed-settlement proof and redeploy.
-2. Run a 3–5 merchant testnet pilot with chain-derived metrics.
-3. Enable Merchant Pro billing in production; add invoice reminders and webhooks.
-4. Build a Telegram bot that creates signed requests (Track 2).
-5. Evaluate an audited checkout contract for enforced single-use invoices and fees.
-6. Mainnet only after an independent review.
+1. Run a 3–5 merchant testnet pilot with chain-derived metrics.
+2. Enable Merchant Pro billing in production; add invoice reminders and webhooks.
+3. Build a Telegram bot that creates signed requests (Track 2).
+4. Evaluate an audited checkout contract for enforced single-use invoices and fees.
+5. Mainnet only after an independent review.
 
 ## Submission materials
 

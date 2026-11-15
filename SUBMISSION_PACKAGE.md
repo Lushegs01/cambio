@@ -47,7 +47,7 @@ Prepared 2026-11-05 (updated 2026-11-08) from the official AKINDO event data (`a
 **Project readiness:** Testnet deployment.
 
 **Future milestones** (from `submission/WAVE_3_ROADMAP.md`):
-1. By 2026-12-15: signed-settlement proof, a 3–5 merchant pilot with chain-derived metrics, and 10 user interviews.
+1. By 2026-12-15: a 3–5 merchant pilot with chain-derived metrics, and 10 user interviews.
 2. By 2027-02-15: Merchant Pro billing enabled in production (mechanism already implemented on testnet), reminders and webhooks, and a Telegram bot.
 3. By 2027-05-15: an audited checkout contract for enforced single-use invoices and fees; mainnet only after review.
 
@@ -62,7 +62,7 @@ Prepared 2026-11-05 (updated 2026-11-08) from the official AKINDO event data (`a
 **On-chain evidence to cite:**
 - MUSD transfer: https://explorer.test.mezo.org/tx/0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e (PASS)
 - BTC→MUSD swap: https://explorer.test.mezo.org/tx/0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e (PASS)
-- Signed-request settlement: **pending**. Add it only after `npm run verify:evidence -- --discover <merchant> --write` returns PASS.
+- Signed-invoice settlement: https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa (PASS). Public proof, no wallet: https://cambio-five.vercel.app/#proof/0x4AC25baC45C06362Cd1a90A61588dA73AB058f21/0x8cabe0bfc705e7808dcedb7a9ecaa594
 
 ## Owner checklist before submitting
 

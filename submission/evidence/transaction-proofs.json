@@ -22,9 +22,9 @@
       "context": "Sender is registered as @solo and recipient as @lushegs in Cambio's SIWE-verified registry. The calldata has no Cambio request-id suffix, so this is a plain MUSD transfer, not a signed-request settlement.",
       "verification": {
         "verdict": "PASS",
-        "verifiedAt": "2026-11-05T10:37:16.466Z",
+        "verifiedAt": "2026-11-15T13:19:01.176Z",
         "rpc": "https://rpc.test.mezo.org",
-        "headBlockAtCheck": "16587215",
+        "headBlockAtCheck": "16796824",
         "explorerUrl": "https://explorer.test.mezo.org/tx/0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e",
         "checks": [
           {
@@ -102,9 +102,9 @@
       "context": "Preceded by the exact-amount BTC approval 0xb44cabdc4f5d28c8023a5b13ea5b397a38e6d77c2edac54363006b09a6c46d79 (0.01 BTC to the Router). Testnet liquidity is not a market price.",
       "verification": {
         "verdict": "PASS",
-        "verifiedAt": "2026-11-05T10:37:17.149Z",
+        "verifiedAt": "2026-11-15T13:19:01.908Z",
         "rpc": "https://rpc.test.mezo.org",
-        "headBlockAtCheck": "16587215",
+        "headBlockAtCheck": "16796824",
         "explorerUrl": "https://explorer.test.mezo.org/tx/0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e",
         "checks": [
           {
@@ -184,24 +184,96 @@
       "id": "signed-payment-settlement",
       "kind": "signed_request_settlement",
       "title": "Payment that settles an EIP-712 signed Cambio request",
-      "hash": null,
-      "paymentLink": null,
+      "hash": "0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa",
+      "paymentLink": "https://cambio-five.vercel.app/#pay?r=eyJ2IjoyLCJpZCI6IjB4OGNhYmUwYmZjNzA1ZTc4MDhkY2VkYjdhOWVjYWE1OTQiLCJjaGFpbklkIjozMTYxMSwidG9rZW4iOiIweDExODkxN2E0MEZBRjFDRDdhMTNkQjBFZjU2Qzg2RGU3OTczQWM1MDMiLCJyZWNpcGllbnQiOiIweDRBQzI1YmFDNDVDMDYzNjJDZDFhOTBBNjE1ODhkQTczQUIwNThmMjEiLCJhbW91bnQiOiI1MDAwMDAwMDAwMDAwMDAwMDAwIiwibWVtbyI6Ikludm9pY2UgIzA1IC0gTW9ydGdhZ2UgcGF5bWVudCIsImNyZWF0ZWRBdCI6MTc5NDc0ODM0MCwiZXhwaXJlc0F0IjoxNzk0ODM0NzQwfQ&s=0x7db2f911c4fde432f2182cc3965359f9e5376fa6e267d0a5c04c5cd92cf1826c198650c3a3a8c774723348e1b729d71f7d7a3ef7d1e9fa37eb2cf2e20ebeb2171c",
       "context": "PENDING. No transaction carrying Cambio's CMB2 request-id calldata suffix was found in the history of @lushegs, @solo or their counterparties (0xA76Ee770458928260f6541685d87f707cbb9958b, 0xB7717e57196e9866de08d5fb4177d8b09f375bfc) as of 2026-11-05. Supply the payment hash AND the signed payment link (r= and s=) to complete this proof. See signed-payment-settlement.md.",
       "verification": {
-        "verdict": "INCONCLUSIVE",
-        "verifiedAt": "2026-11-05T10:37:17.149Z",
+        "verdict": "PASS",
+        "verifiedAt": "2026-11-15T13:19:02.549Z",
         "rpc": "https://rpc.test.mezo.org",
-        "headBlockAtCheck": "16587215",
-        "explorerUrl": null,
+        "headBlockAtCheck": "16796824",
+        "explorerUrl": "https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa",
         "checks": [
           {
-            "name": "evidence available",
-            "ok": null,
-            "detail": "No transaction hash has been supplied for this proof."
+            "name": "hash matches",
+            "ok": true,
+            "detail": "RPC returned 0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa"
+          },
+          {
+            "name": "network",
+            "ok": true,
+            "detail": "chain 31611 (expected 31611)"
+          },
+          {
+            "name": "receipt status",
+            "ok": true,
+            "detail": "status=success in block 16796758"
+          },
+          {
+            "name": "block timestamp",
+            "ok": true,
+            "detail": "2026-11-15T13:14:18.000Z"
+          },
+          {
+            "name": "target is MUSD",
+            "ok": true,
+            "detail": "to=0x118917a40faf1cd7a13db0ef56c86de7973ac503 (MUSD 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503)"
+          },
+          {
+            "name": "calldata is transfer(to, amount)",
+            "ok": true,
+            "detail": "selector 0xa9059cbb"
+          },
+          {
+            "name": "Transfer event matches calldata",
+            "ok": true,
+            "detail": "Transfer(0xf61e41576209907de034e9f4619410902f6d674c → 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21, 5000000000000000000) emitted by MUSD"
+          },
+          {
+            "name": "expected recipient",
+            "ok": true,
+            "detail": "expected 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21"
+          },
+          {
+            "name": "expected amount",
+            "ok": true,
+            "detail": "expected 5000000000000000000"
+          },
+          {
+            "name": "request signed by recipient (EIP-712)",
+            "ok": true,
+            "detail": "signed by 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21"
+          },
+          {
+            "name": "request chain",
+            "ok": true,
+            "detail": "request for chain 31611"
+          },
+          {
+            "name": "calldata binds request id, recipient and amount",
+            "ok": true,
+            "detail": "settled"
           }
         ],
-        "facts": {}
-      }
+        "facts": {
+          "chainId": "31611",
+          "from": "0xF61e41576209907DE034E9F4619410902F6d674C",
+          "to": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
+          "blockNumber": "16796758",
+          "gasUsed": "34905",
+          "feeWei": "5096130",
+          "blockTime": "2026-11-15T13:14:18.000Z",
+          "recipient": "0x4AC25baC45C06362Cd1a90A61588dA73AB058f21",
+          "amount": "5000000000000000000",
+          "calldataSuffix": "0x434d42328cabe0bfc705e7808dcedb7a9ecaa594",
+          "requestId": "0x8cabe0bfc705e7808dcedb7a9ecaa594",
+          "signedRequestId": "0x8cabe0bfc705e7808dcedb7a9ecaa594",
+          "requestCreatedAt": "2026-11-15T13:12:20.000Z",
+          "requestExpiresAt": "2026-11-16T13:12:20.000Z"
+        }
+      },
+      "discoveredAt": "2026-11-15T13:18:47.947Z",
+      "discoveredVia": "npm run verify:evidence -- --discover 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21 --registry https://cambio-five.vercel.app"
     }
   ]
 }

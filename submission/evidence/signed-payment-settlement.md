@@ -1,8 +1,20 @@
 # Evidence: payment settling an EIP-712 signed Cambio request
 
-**Verdict: INCONCLUSIVE (pending). Do not cite this proof as complete.**
+**Verdict: PASS (2026-11-15).**
 
-> **Update 2026-11-08.** A re-scan of @lushegs and @solo still finds no CMB2-suffixed payment. Two @solo transfers that the first scan could not read were fetched directly: both are plain 68-byte `transfer` calls. The current procedure is `submission/WAVE2_OWNER_ACTIONS.md` §1. After paying a signed invoice in the app, run `npm run verify:evidence -- --discover <merchant> --write`. It finds the payment by its on-chain request id, fetches the signed request from the public registry, re-verifies the signature and the settlement, and records both the hash and the link. The manual steps below still work.
+| | |
+| --- | --- |
+| Transaction | [`0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa`](https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa) |
+| Invoice | "Invoice #05 - Mortgage payment", 5 MUSD, request id `0x8cabe0bfc705e7808dcedb7a9ecaa594`, signed (EIP-712) by @cambomerchant `0x4AC25baC45C06362Cd1a90A61588dA73AB058f21` |
+| Payer | @irebami `0xF61e41576209907DE034E9F4619410902F6d674C` |
+| Calldata | `transfer(0x4AC2…8f21, 5 MUSD)` ‖ `434d4232` ‖ `8cabe0bf…a594` |
+| Checks | Chain 31611, MUSD contract, `transfer` calldata, successful receipt, matching `Transfer` event, recipient, amount, merchant's EIP-712 signature, request chain, calldata binding to the request id: all pass |
+| Public proof (no wallet) | https://cambio-five.vercel.app/#proof/0x4AC25baC45C06362Cd1a90A61588dA73AB058f21/0x8cabe0bfc705e7808dcedb7a9ecaa594 |
+| Found and recorded by | `npm run verify:evidence -- --discover 0x4AC25baC45C06362Cd1a90A61588dA73AB058f21 --write` |
+
+The same scan found two earlier payments from @irebami to @cambomerchant (2026-11-03, 50 MUSD each) that both settle one signed invoice, "Invoice #56" (request `0xdbd61a08…6c75`): [`0xcedfae1e…50c4`](https://explorer.test.mezo.org/tx/0xcedfae1ed41385885e3ba92a5ae458d32cb26809f0c5f2be1e5e7afb542050c4) and [`0x5bbbe40f…7d60`](https://explorer.test.mezo.org/tx/0x5bbbe40f4b63210dc2b5ee19088e5e06552ce863b5a9c361de7869d528707d60). Both verify (PASS), so that invoice was paid twice. The registry knows only the second, because the first was never reported to it, so the duplicate is not flagged there. The rest of this file is the history of how the proof was obtained.
+
+> **History, 2026-11-08 (before the proof existed).** A re-scan of @lushegs and @solo still finds no CMB2-suffixed payment. Two @solo transfers that the first scan could not read were fetched directly: both are plain 68-byte `transfer` calls. The current procedure is `submission/WAVE2_OWNER_ACTIONS.md` §1. After paying a signed invoice in the app, run `npm run verify:evidence -- --discover <merchant> --write`. It finds the payment by its on-chain request id, fetches the signed request from the public registry, re-verifies the signature and the settlement, and records both the hash and the link. The manual steps below still work.
 
 ## What Cambio requires for "settled"
 

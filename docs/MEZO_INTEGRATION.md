@@ -88,7 +88,7 @@ When a payer opens a verified signed request without enough MUSD:
 | --- | --- | --- |
 | MUSD transfer (@solo → @lushegs, 10 MUSD) | [`0x8e39…065e`](https://explorer.test.mezo.org/tx/0x8e39d309561c8d2c8447756c6166d330837e051ee6ba258e6b5427e5b851065e) | **PASS** |
 | BTC → MUSD swap (0.01 BTC → 786.1477 MUSD) | [`0x4af2…3f6e`](https://explorer.test.mezo.org/tx/0x4af2b0f08f7e7494dfda8e3dafb36c03316c9dcd616c9a26a5222d0f78a33f6e) | **PASS** |
-| Signed-request settlement | none found with a CMB2 suffix | **PENDING** |
+| Signed-invoice settlement (5 MUSD, @irebami → @cambomerchant) | [`0x7256…5caa`](https://explorer.test.mezo.org/tx/0x7256e1e29b05c2cfaa0784b4d11504d586590bc075df4eebee08bbcf99a35caa) | **PASS** |
 
 Re-run with `npm run verify:evidence`. Details are in `submission/evidence/`.
 

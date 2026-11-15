@@ -4,7 +4,8 @@ Status as of 2026-11-08. Each item is a current fact about the product, not a ro
 
 ## Evidence and adoption
 
-- **No signed-request settlement exists on-chain yet.** The MUSD transfer and the BTC→MUSD swap are verified (PASS). A re-scan on 2026-11-08 found no transaction carrying Cambio's request-id suffix for the known wallets. `submission/WAVE2_OWNER_ACTIONS.md` §1 completes it; `npm run verify:evidence -- --discover <merchant> --write` then records it.
+- **All three on-chain proofs pass** (MUSD transfer, BTC→MUSD swap, signed-invoice settlement; `npm run verify:evidence`). There is still no on-chain run of Fund & Pay *within* an invoice: a swap followed by that invoice's payment from the same payer.
+- **Duplicate payments are flagged only when reported.** A real example: invoice request `0xdbd61a08…6c75` was paid twice on 2026-11-03, and both payments verify. The registry recorded only the payment that was reported to it, so it shows no duplicate. The merchant's on-chain re-check does not run for an invoice that is already marked paid.
 - **No user research or pilot results exist yet.** The templates, consent form and metrics tool are ready (`docs/USER_RESEARCH.md`, `docs/MERCHANT_PILOT_PLAN.md`, `npm run pilot:metrics`). No interviews or pilot payments have taken place. There are no customers or revenue.
 - Production at https://cambio-five.vercel.app runs the first Wave 2 build (Fund & Pay, Mezo position card, invoice registry are live). The proof viewer, stepper, Merchant Pro and new share channels go live only after branch `lushegs/focused-goldberg-9ruzxf` is merged and redeployed.
 - **Merchant Pro billing is off in production** until the owner sets `PRO_TREASURY_ADDRESS`. No subscription has been paid; testnet MUSD is not revenue.

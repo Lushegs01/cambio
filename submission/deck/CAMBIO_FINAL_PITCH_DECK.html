@@ -156,11 +156,11 @@
     <tr><th>Proof</th><th>Transaction</th><th>What was checked</th><th>Verdict</th></tr>
     <tr><td>MUSD transfer<br/><span class="note">10 MUSD, @solo → @lushegs</span></td><td class="mono">0x8e39d309…5065e<br/><span class="note">block 16390715</span></td><td>Targets MUSD; <code>transfer</code> calldata; success; matching <code>Transfer</code> event; sender, recipient and amount</td><td><span class="pill pass">PASS</span></td></tr>
     <tr><td>BTC → MUSD swap<br/><span class="note">0.01 BTC → 786.1477 MUSD</span></td><td class="mono">0x4af2b0f0…33f6e<br/><span class="note">block 16382064</span></td><td>Mezo Router; BTC→MUSD route via PoolFactory; BTC into the pool; MUSD out ≥ router minimum (782.2170)</td><td><span class="pill pass">PASS</span></td></tr>
-    <tr><td>Signed-invoice settlement</td><td class="mono">not yet recorded</td><td>No transaction with Cambio's <code>CMB2</code> invoice-ID calldata exists yet (re-scanned Nov 8). E2E proves the wallet is asked to sign exactly that calldata; <code>--discover</code> records it automatically once paid.</td><td><span class="pill pend">PENDING</span></td></tr>
+    <tr><td>Signed-invoice settlement<br/><span class="note">5 MUSD, @irebami → @cambomerchant</span></td><td class="mono">0x7256e1e2…35caa<br/><span class="note">block 16796758</span></td><td>Merchant's EIP-712 signature; calldata = <code>transfer</code> ‖ <code>CMB2</code> ‖ invoice ID; success; matching <code>Transfer</code>; exact recipient and amount; paid after the invoice was created</td><td><span class="pill pass">PASS</span></td></tr>
   </table>
   <div class="row" style="margin-top:14px;align-items:flex-start">
-    <p style="flex:1;margin:0"><code>npm run verify:evidence</code> → PASS / FAIL / INCONCLUSIVE; unreadable data is never a pass. The same checks run in the browser on every proof page. <b>Forgery test:</b> claiming the real transfer above as payment of a different signed invoice is rejected — it is a genuine MUSD transfer, but to the wrong recipient and without the invoice ID.</p>
-    <img src="../screenshots/phone-proof-rejects-plain-transfer.png" class="shot" style="width:220px;height:200px;object-fit:cover;object-position:top" />
+    <p style="flex:1;margin:0"><code>npm run verify:evidence</code> → PASS / FAIL / INCONCLUSIVE; unreadable data is never a pass. The settlement was found automatically with <code>--discover</code>, and the same 12 checks run in any browser on its public proof page (right, live production, no wallet). <b>Forgery test:</b> claiming the plain transfer above as payment of a signed invoice is rejected — wrong recipient, no invoice ID.</p>
+    <img src="../screenshots/phone-proof-verified-settlement.png" class="shot" style="width:220px;height:200px;object-fit:cover;object-position:top" />
   </div>
   <div class="foot"><span>explorer.test.mezo.org · submission/evidence/</span><span>7</span></div>
 </section>
@@ -187,7 +187,7 @@
   <h2>Honest status: zero users so far. The pilot is ready.</h2>
   <div class="row">
     <div class="card" style="flex:1"><div class="big">0</div><p>paying customers, revenue, or completed interviews. We claim none.</p></div>
-    <div class="card" style="flex:1"><div class="big">2 / 3</div><p>on-chain proofs verified (transfer, swap); signed settlement pending</p></div>
+    <div class="card" style="flex:1"><div class="big">3 / 3</div><p>on-chain proofs verified: MUSD transfer, BTC→MUSD swap, signed-invoice settlement</p></div>
     <div class="card" style="flex:1"><div class="big">Ready</div><p>Consent, onboarding, observation and case-study templates; <code>pilot:metrics</code> counts only verifiable transactions; <code>check:submission</code> stays BLOCKED until real participants exist</p></div>
   </div>
   <table style="margin-top:20px">
@@ -218,7 +218,7 @@
         <li>CSP, rate limits, deny-by-default Firestore rules</li>
       </ul>
       <h3 style="margin-top:12px">Tests (2026-11-08)</h3>
-      <p style="font-size:15px">305 unit/integration/API · 26 Firestore emulator · 26 browser e2e (production build, live testnet reads, never broadcasts) · 7 live read-only · ESLint 0 warnings · CI on main, every PR and daily. Fixed this wave: a pay-while-pending double-payment bug. <b>Not audited.</b></p>
+      <p style="font-size:15px">305 unit/integration/API · 26 Firestore emulator · 26 browser e2e (production build, live testnet reads, never broadcasts) · 8 live read-only · ESLint 0 warnings · CI on main, every PR and daily. Fixed this wave: a pay-while-pending double-payment bug. <b>Not audited.</b></p>
     </div>
   </div>
   <div class="foot"><span>docs/ARCHITECTURE.md · docs/WAVE2_SECURITY_REPORT.md</span><span>10</span></div>

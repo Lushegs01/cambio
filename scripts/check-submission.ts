@@ -290,7 +290,13 @@ async function urls() {
 
 function deadline() {
   const ms = Date.parse(fields.event.deadlineUtc) - Date.now();
-  add({ area: 'Timeline', name: 'Before the (earlier) AKINDO deadline', status: ms > 0 ? 'PASS' : 'FAIL', detail: `${fields.event.deadlineUtc} — ${ms > 0 ? `${(ms / 3_600_000).toFixed(1)} h left` : 'passed'}; confirm the date in the AKINDO UI` });
+  // The true deadline is not verifiable from the repo (the platform field and the announcement differ), so a
+  // passed date is an owner question, not a defect a code change could fix: BLOCKED, never FAIL.
+  add({
+    area: 'Timeline', name: 'Before the (earlier) AKINDO deadline', status: ms > 0 ? 'PASS' : 'BLOCKED',
+    detail: `${fields.event.deadlineUtc} — ${ms > 0 ? `${(ms / 3_600_000).toFixed(1)} h left; confirm the date in the AKINDO UI` : 'this recorded date has passed'}`,
+    action: ms > 0 ? undefined : 'Check in AKINDO whether Wave 2 submissions are still open (the announcement said Nov 15), then update event.deadlineUtc in submission/submission-fields.json (owner).',
+  });
 }
 
 function gitSha(): string {
